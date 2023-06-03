@@ -55,7 +55,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "/home/berivan/Downloads/rn-exercise3-template/template/cmake-build-debug"
+			"value" : "/home/berivan/Dokumente/RNP3/rnp3/rn-exercise3-template/template/cmake-build-debug"
 		},
 		{
 			"name" : "CMAKE_CACHE_MAJOR_VERSION",
@@ -491,7 +491,7 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "/home/berivan/Downloads/rn-exercise3-template/template/cmake-build-debug/CMakeFiles/pkgRedirects"
+			"value" : "/home/berivan/Dokumente/RNP3/rnp3/rn-exercise3-template/template/cmake-build-debug/CMakeFiles/pkgRedirects"
 		},
 		{
 			"name" : "CMAKE_GENERATOR",
@@ -551,7 +551,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "/home/berivan/Downloads/rn-exercise3-template/template"
+			"value" : "/home/berivan/Dokumente/RNP3/rnp3/rn-exercise3-template/template"
 		},
 		{
 			"name" : "CMAKE_INSTALL_PREFIX",
@@ -1191,7 +1191,7 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "/home/berivan/Downloads/rn-exercise3-template/template/cmake-build-debug"
+			"value" : "/home/berivan/Dokumente/RNP3/rnp3/rn-exercise3-template/template/cmake-build-debug"
 		},
 		{
 			"name" : "rn-ex03_IS_TOP_LEVEL",
@@ -1215,7 +1215,7 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "/home/berivan/Downloads/rn-exercise3-template/template"
+			"value" : "/home/berivan/Dokumente/RNP3/rnp3/rn-exercise3-template/template"
 		}
 	],
 	"kind" : "cache",

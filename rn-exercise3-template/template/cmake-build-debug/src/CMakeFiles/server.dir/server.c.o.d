@@ -1,5 +1,5 @@
 src/CMakeFiles/server.dir/server.c.o: \
- /home/berivan/Downloads/rn-exercise3-template/template/src/server.c \
+ /home/berivan/Dokumente/RNP3/rnp3/rn-exercise3-template/template/src/server.c \
  /usr/include/stdc-predef.h /usr/include/arpa/inet.h \
  /usr/include/features.h /usr/include/features-time64.h \
  /usr/include/bits/wordsize.h /usr/include/bits/timesize.h \
@@ -41,10 +41,7 @@ src/CMakeFiles/server.dir/server.c.o: \
  /usr/include/unistd.h /usr/include/bits/posix_opt.h \
  /usr/include/bits/environments.h /usr/include/bits/confname.h \
  /usr/include/bits/getopt_posix.h /usr/include/bits/getopt_core.h \
- /usr/include/bits/unistd_ext.h /usr/include/netdb.h \
- /usr/include/rpc/netdb.h /usr/include/bits/netdb.h /usr/include/string.h \
+ /usr/include/bits/unistd_ext.h /usr/include/string.h \
  /usr/include/bits/types/locale_t.h /usr/include/bits/types/__locale_t.h \
- /usr/include/strings.h /usr/include/stdlib.h \
- /usr/include/bits/waitflags.h /usr/include/bits/waitstatus.h \
- /usr/include/alloca.h /usr/include/bits/stdlib-bsearch.h \
- /usr/include/bits/stdlib-float.h
+ /usr/include/strings.h /usr/include/netdb.h /usr/include/rpc/netdb.h \
+ /usr/include/bits/netdb.h

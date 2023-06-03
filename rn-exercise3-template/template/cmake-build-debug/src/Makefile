@@ -57,10 +57,10 @@ RM = /var/lib/snapd/snap/clion/237/bin/cmake/linux/x64/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/berivan/Downloads/rn-exercise3-template/template
+CMAKE_SOURCE_DIR = /home/berivan/Dokumente/RNP3/rnp3/rn-exercise3-template/template
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/berivan/Downloads/rn-exercise3-template/template/cmake-build-debug
+CMAKE_BINARY_DIR = /home/berivan/Dokumente/RNP3/rnp3/rn-exercise3-template/template/cmake-build-debug
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -87,14 +87,14 @@ rebuild_cache/fast: rebuild_cache
 
 # The main all target
 all: cmake_check_build_system
-	cd /home/berivan/Downloads/rn-exercise3-template/template/cmake-build-debug && $(CMAKE_COMMAND) -E cmake_progress_start /home/berivan/Downloads/rn-exercise3-template/template/cmake-build-debug/CMakeFiles /home/berivan/Downloads/rn-exercise3-template/template/cmake-build-debug/src//CMakeFiles/progress.marks
-	cd /home/berivan/Downloads/rn-exercise3-template/template/cmake-build-debug && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 src/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/berivan/Downloads/rn-exercise3-template/template/cmake-build-debug/CMakeFiles 0
+	cd /home/berivan/Dokumente/RNP3/rnp3/rn-exercise3-template/template/cmake-build-debug && $(CMAKE_COMMAND) -E cmake_progress_start /home/berivan/Dokumente/RNP3/rnp3/rn-exercise3-template/template/cmake-build-debug/CMakeFiles /home/berivan/Dokumente/RNP3/rnp3/rn-exercise3-template/template/cmake-build-debug/src//CMakeFiles/progress.marks
+	cd /home/berivan/Dokumente/RNP3/rnp3/rn-exercise3-template/template/cmake-build-debug && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 src/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/berivan/Dokumente/RNP3/rnp3/rn-exercise3-template/template/cmake-build-debug/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
 clean:
-	cd /home/berivan/Downloads/rn-exercise3-template/template/cmake-build-debug && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 src/clean
+	cd /home/berivan/Dokumente/RNP3/rnp3/rn-exercise3-template/template/cmake-build-debug && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 src/clean
 .PHONY : clean
 
 # The main clean target
@@ -103,22 +103,22 @@ clean/fast: clean
 
 # Prepare targets for installation.
 preinstall: all
-	cd /home/berivan/Downloads/rn-exercise3-template/template/cmake-build-debug && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 src/preinstall
+	cd /home/berivan/Dokumente/RNP3/rnp3/rn-exercise3-template/template/cmake-build-debug && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 src/preinstall
 .PHONY : preinstall
 
 # Prepare targets for installation.
 preinstall/fast:
-	cd /home/berivan/Downloads/rn-exercise3-template/template/cmake-build-debug && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 src/preinstall
+	cd /home/berivan/Dokumente/RNP3/rnp3/rn-exercise3-template/template/cmake-build-debug && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 src/preinstall
 .PHONY : preinstall/fast
 
 # clear depends
 depend:
-	cd /home/berivan/Downloads/rn-exercise3-template/template/cmake-build-debug && $(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
+	cd /home/berivan/Dokumente/RNP3/rnp3/rn-exercise3-template/template/cmake-build-debug && $(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
 .PHONY : depend
 
 # Convenience name for target.
 src/CMakeFiles/client.dir/rule:
-	cd /home/berivan/Downloads/rn-exercise3-template/template/cmake-build-debug && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 src/CMakeFiles/client.dir/rule
+	cd /home/berivan/Dokumente/RNP3/rnp3/rn-exercise3-template/template/cmake-build-debug && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 src/CMakeFiles/client.dir/rule
 .PHONY : src/CMakeFiles/client.dir/rule
 
 # Convenience name for target.
@@ -127,12 +127,12 @@ client: src/CMakeFiles/client.dir/rule
 
 # fast build rule for target.
 client/fast:
-	cd /home/berivan/Downloads/rn-exercise3-template/template/cmake-build-debug && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/client.dir/build.make src/CMakeFiles/client.dir/build
+	cd /home/berivan/Dokumente/RNP3/rnp3/rn-exercise3-template/template/cmake-build-debug && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/client.dir/build.make src/CMakeFiles/client.dir/build
 .PHONY : client/fast
 
 # Convenience name for target.
 src/CMakeFiles/server.dir/rule:
-	cd /home/berivan/Downloads/rn-exercise3-template/template/cmake-build-debug && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 src/CMakeFiles/server.dir/rule
+	cd /home/berivan/Dokumente/RNP3/rnp3/rn-exercise3-template/template/cmake-build-debug && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 src/CMakeFiles/server.dir/rule
 .PHONY : src/CMakeFiles/server.dir/rule
 
 # Convenience name for target.
@@ -141,7 +141,7 @@ server: src/CMakeFiles/server.dir/rule
 
 # fast build rule for target.
 server/fast:
-	cd /home/berivan/Downloads/rn-exercise3-template/template/cmake-build-debug && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/server.dir/build.make src/CMakeFiles/server.dir/build
+	cd /home/berivan/Dokumente/RNP3/rnp3/rn-exercise3-template/template/cmake-build-debug && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/server.dir/build.make src/CMakeFiles/server.dir/build
 .PHONY : server/fast
 
 client.o: client.c.o
@@ -149,7 +149,7 @@ client.o: client.c.o
 
 # target to build an object file
 client.c.o:
-	cd /home/berivan/Downloads/rn-exercise3-template/template/cmake-build-debug && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/client.dir/build.make src/CMakeFiles/client.dir/client.c.o
+	cd /home/berivan/Dokumente/RNP3/rnp3/rn-exercise3-template/template/cmake-build-debug && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/client.dir/build.make src/CMakeFiles/client.dir/client.c.o
 .PHONY : client.c.o
 
 client.i: client.c.i
@@ -157,7 +157,7 @@ client.i: client.c.i
 
 # target to preprocess a source file
 client.c.i:
-	cd /home/berivan/Downloads/rn-exercise3-template/template/cmake-build-debug && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/client.dir/build.make src/CMakeFiles/client.dir/client.c.i
+	cd /home/berivan/Dokumente/RNP3/rnp3/rn-exercise3-template/template/cmake-build-debug && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/client.dir/build.make src/CMakeFiles/client.dir/client.c.i
 .PHONY : client.c.i
 
 client.s: client.c.s
@@ -165,7 +165,7 @@ client.s: client.c.s
 
 # target to generate assembly for a file
 client.c.s:
-	cd /home/berivan/Downloads/rn-exercise3-template/template/cmake-build-debug && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/client.dir/build.make src/CMakeFiles/client.dir/client.c.s
+	cd /home/berivan/Dokumente/RNP3/rnp3/rn-exercise3-template/template/cmake-build-debug && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/client.dir/build.make src/CMakeFiles/client.dir/client.c.s
 .PHONY : client.c.s
 
 server.o: server.c.o
@@ -173,7 +173,7 @@ server.o: server.c.o
 
 # target to build an object file
 server.c.o:
-	cd /home/berivan/Downloads/rn-exercise3-template/template/cmake-build-debug && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/server.dir/build.make src/CMakeFiles/server.dir/server.c.o
+	cd /home/berivan/Dokumente/RNP3/rnp3/rn-exercise3-template/template/cmake-build-debug && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/server.dir/build.make src/CMakeFiles/server.dir/server.c.o
 .PHONY : server.c.o
 
 server.i: server.c.i
@@ -181,7 +181,7 @@ server.i: server.c.i
 
 # target to preprocess a source file
 server.c.i:
-	cd /home/berivan/Downloads/rn-exercise3-template/template/cmake-build-debug && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/server.dir/build.make src/CMakeFiles/server.dir/server.c.i
+	cd /home/berivan/Dokumente/RNP3/rnp3/rn-exercise3-template/template/cmake-build-debug && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/server.dir/build.make src/CMakeFiles/server.dir/server.c.i
 .PHONY : server.c.i
 
 server.s: server.c.s
@@ -189,7 +189,7 @@ server.s: server.c.s
 
 # target to generate assembly for a file
 server.c.s:
-	cd /home/berivan/Downloads/rn-exercise3-template/template/cmake-build-debug && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/server.dir/build.make src/CMakeFiles/server.dir/server.c.s
+	cd /home/berivan/Dokumente/RNP3/rnp3/rn-exercise3-template/template/cmake-build-debug && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/server.dir/build.make src/CMakeFiles/server.dir/server.c.s
 .PHONY : server.c.s
 
 # Help Target
@@ -219,6 +219,6 @@ help:
 # No rule that depends on this can have commands that come from listfiles
 # because they might be regenerated.
 cmake_check_build_system:
-	cd /home/berivan/Downloads/rn-exercise3-template/template/cmake-build-debug && $(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 0
+	cd /home/berivan/Dokumente/RNP3/rnp3/rn-exercise3-template/template/cmake-build-debug && $(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 0
 .PHONY : cmake_check_build_system
 

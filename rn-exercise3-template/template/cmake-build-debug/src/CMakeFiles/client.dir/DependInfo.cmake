@@ -8,7 +8,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
-  "/home/berivan/Downloads/rn-exercise3-template/template/src/client.c" "src/CMakeFiles/client.dir/client.c.o" "gcc" "src/CMakeFiles/client.dir/client.c.o.d"
+  "/home/berivan/Dokumente/RNP3/rnp3/rn-exercise3-template/template/src/client.c" "src/CMakeFiles/client.dir/client.c.o" "gcc" "src/CMakeFiles/client.dir/client.c.o.d"
   )
 
 # Targets to which this target links.

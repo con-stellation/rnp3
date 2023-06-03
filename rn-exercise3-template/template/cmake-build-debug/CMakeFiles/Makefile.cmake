@@ -7,10 +7,10 @@ set(CMAKE_DEPENDS_GENERATOR "Unix Makefiles")
 # The top level Makefile was generated from the following files:
 set(CMAKE_MAKEFILE_DEPENDS
   "CMakeCache.txt"
-  "/home/berivan/Downloads/rn-exercise3-template/template/CMakeLists.txt"
+  "/home/berivan/Dokumente/RNP3/rnp3/rn-exercise3-template/template/CMakeLists.txt"
   "CMakeFiles/3.25.2/CMakeCCompiler.cmake"
   "CMakeFiles/3.25.2/CMakeSystem.cmake"
-  "/home/berivan/Downloads/rn-exercise3-template/template/src/CMakeLists.txt"
+  "/home/berivan/Dokumente/RNP3/rnp3/rn-exercise3-template/template/src/CMakeLists.txt"
   "/var/lib/snapd/snap/clion/237/bin/cmake/linux/x64/share/cmake-3.25/Modules/CMakeCCompiler.cmake.in"
   "/var/lib/snapd/snap/clion/237/bin/cmake/linux/x64/share/cmake-3.25/Modules/CMakeCCompilerABI.c"
   "/var/lib/snapd/snap/clion/237/bin/cmake/linux/x64/share/cmake-3.25/Modules/CMakeCInformation.cmake"

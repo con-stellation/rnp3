@@ -74,8 +74,8 @@
 	"kind" : "codemodel",
 	"paths" : 
 	{
-		"build" : "/home/berivan/Downloads/rn-exercise3-template/template/cmake-build-debug",
-		"source" : "/home/berivan/Downloads/rn-exercise3-template/template"
+		"build" : "/home/berivan/Dokumente/RNP3/rnp3/rn-exercise3-template/template/cmake-build-debug",
+		"source" : "/home/berivan/Dokumente/RNP3/rnp3/rn-exercise3-template/template"
 	},
 	"version" : 
 	{

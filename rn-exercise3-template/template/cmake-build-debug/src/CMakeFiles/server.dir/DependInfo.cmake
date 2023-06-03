@@ -8,7 +8,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
-  "/home/berivan/Downloads/rn-exercise3-template/template/src/server.c" "src/CMakeFiles/server.dir/server.c.o" "gcc" "src/CMakeFiles/server.dir/server.c.o.d"
+  "/home/berivan/Dokumente/RNP3/rnp3/rn-exercise3-template/template/src/server.c" "src/CMakeFiles/server.dir/server.c.o" "gcc" "src/CMakeFiles/server.dir/server.c.o.d"
   )
 
 # Targets to which this target links.

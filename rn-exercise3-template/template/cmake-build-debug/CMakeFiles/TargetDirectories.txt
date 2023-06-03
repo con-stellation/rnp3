@@ -1,6 +1,6 @@
-/home/berivan/Downloads/rn-exercise3-template/template/cmake-build-debug/CMakeFiles/edit_cache.dir
-/home/berivan/Downloads/rn-exercise3-template/template/cmake-build-debug/CMakeFiles/rebuild_cache.dir
-/home/berivan/Downloads/rn-exercise3-template/template/cmake-build-debug/src/CMakeFiles/client.dir
-/home/berivan/Downloads/rn-exercise3-template/template/cmake-build-debug/src/CMakeFiles/server.dir
-/home/berivan/Downloads/rn-exercise3-template/template/cmake-build-debug/src/CMakeFiles/edit_cache.dir
-/home/berivan/Downloads/rn-exercise3-template/template/cmake-build-debug/src/CMakeFiles/rebuild_cache.dir
+/home/berivan/Dokumente/RNP3/rnp3/rn-exercise3-template/template/cmake-build-debug/CMakeFiles/edit_cache.dir
+/home/berivan/Dokumente/RNP3/rnp3/rn-exercise3-template/template/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/home/berivan/Dokumente/RNP3/rnp3/rn-exercise3-template/template/cmake-build-debug/src/CMakeFiles/client.dir
+/home/berivan/Dokumente/RNP3/rnp3/rn-exercise3-template/template/cmake-build-debug/src/CMakeFiles/server.dir
+/home/berivan/Dokumente/RNP3/rnp3/rn-exercise3-template/template/cmake-build-debug/src/CMakeFiles/edit_cache.dir
+/home/berivan/Dokumente/RNP3/rnp3/rn-exercise3-template/template/cmake-build-debug/src/CMakeFiles/rebuild_cache.dir

@@ -1,4 +1,4 @@
-# Install script for directory: /home/berivan/Downloads/rn-exercise3-template/template/src
+# Install script for directory: /home/berivan/Dokumente/RNP3/rnp3/rn-exercise3-template/template/src
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

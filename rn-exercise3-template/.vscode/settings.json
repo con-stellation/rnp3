@@ -1,3 +1,4 @@
 {
-    "cmake.configureOnOpen": true
+    "cmake.configureOnOpen": true,
+    "cmake.sourceDirectory": "/home/berivan/Dokumente/RNP3/rnp3/rn-exercise3-template/template/src"
 }
