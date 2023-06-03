@@ -5,6 +5,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <string.h>
+#include <netdb.h>
 
 #define BUFFER_SIZE 256
 #define SRV_PORT 7777
@@ -15,20 +16,40 @@ int main(int argc, char** argv) {
 
     int s_tcp, news, maxfd, selectRet;
     fd_set all_fds, copy_fds;
-    struct sockaddr_in sa, sa_client;
-    unsigned int sa_len = sizeof(struct sockaddr_in);
+
+    //IP-neutralität gewähren
+    int status;
+    struct addrinfo hints;
+    struct addrinfo *servinfo;
+    struct sockaddr_storage sa_client;
+    socklen_t  sa_len;
+
+    memset(&hints, 0, sizeof hints);
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_flags = AI_PASSIVE;
+    hints.ai_protocol = IPPROTO_TCP;
+
+    char port[6];
+    sprintf(port, "%d", SRV_PORT);
+
+    if ((status = getaddrinfo(NULL, port, &hints, &servinfo)) != 0) {
+        perror("getaddrinfo");
+        return 1;
+    }
+
     char info[BUFFER_SIZE], temp[INET6_ADDRSTRLEN];
 
-    sa.sin_family = AF_INET;
+/*    sa.sin_family = AF_INET;
     sa.sin_port = htons(SRV_PORT);
-    sa.sin_addr.s_addr = INADDR_ANY;
+    sa.sin_addr.s_addr = INADDR_ANY;*/
 
-    if ((s_tcp = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0) {
+    if ((s_tcp = socket(servinfo->ai_family, servinfo->ai_socktype, servinfo->ai_protocol)) < 0) {
         perror("TCP Socket");
         return 1;
     }
 
-    if (bind(s_tcp, (struct sockaddr*)&sa, sa_len) < 0) {
+    if (bind(s_tcp, servinfo->ai_addr, servinfo->ai_addrlen) < 0) {
         perror("bind");
         return 1;
     }
@@ -64,6 +85,7 @@ int main(int argc, char** argv) {
             if (FD_ISSET(i, &copy_fds)) {
                 printf("FD_ISSET i=%d\n", i);
                 if (i == s_tcp) {
+                    sa_len = sizeof sa_client;
                     if ((news = accept(s_tcp, (struct sockaddr*)&sa_client, &sa_len)) < 0) {
                         perror("accept");
                         close(s_tcp);
@@ -75,7 +97,7 @@ int main(int argc, char** argv) {
                         maxfd = news;
                     }
                     printf("selectserver: new connection from %s on socket %d\n",
-                           inet_ntop(sa.sin_family, (struct sockaddr*)&sa.sin_addr, temp, INET6_ADDRSTRLEN), news);
+                           inet_ntop(hints.ai_family, (struct sockaddr*)&sa_client, temp, INET6_ADDRSTRLEN), news);
                     printf("New socket = %d\n", news);
                 } else {
                     printf("<else-block> i=%d\n", i);
@@ -90,7 +112,7 @@ int main(int argc, char** argv) {
             }
         }
     }
-
+    freeaddrinfo(servinfo);
     close(s_tcp);
     return 0;
 }
