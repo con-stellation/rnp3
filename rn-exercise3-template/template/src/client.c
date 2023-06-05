@@ -62,3 +62,42 @@ int main(int argc, char** argv) {
 
   close(s_tcp);
 }
+
+int read_command() {
+  char command[2];
+  fgets(command, sizeof(command), stdin);
+  return (int) command[0] - (int) '0';
+}
+
+void read_request(int stream) {
+  printf("Enter Command:\n");
+  printf("0) List\n");
+  printf("1) Files\n");
+  printf("2) Get\n");
+  printf("3) Put\n");
+  printf("4) Quit\n");
+  uint8_t command = (uint8_t) read_command();
+  send(stream, &command, sizeof(command), 0);
+  if(command == 3 || command == 2) {
+    printf("enter filename: \n");
+    char buffer[MAX_FILE_NAME] = {0};
+    char unused[2]; //flush the newline character from the console
+    fgets(unused, sizeof(unused), stdin);
+    fgets(buffer, sizeof(buffer), stdin);
+    send(stream, buffer, strlen(buffer), 0);
+  }
+  if(command == 2) {
+    char buffer[2] = {0};
+    int bytes = recv(stream, buffer, 1, 0);
+    printf("%s", buffer);
+    //printf("bytes received: %d\n", bytes);
+    while(bytes > 0) {
+      bytes = recv(stream, buffer, 1, 0);
+      //printf("bytes received: %d\n", bytes);
+      if(buffer[0] == EOF){
+        break;
+      }
+      printf("%s", buffer);
+    }
+  }
+}
