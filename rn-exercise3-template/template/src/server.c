@@ -6,9 +6,14 @@
 #include <unistd.h>
 #include <string.h>
 #include <netdb.h>
+#include <stdbool.h>
+#include <sys/sendfile.h>
+#include <fcntl.h>
 
 #define BUFFER_SIZE 256
 #define SRV_PORT 7777
+
+void handle_request(int);
 
 int main(int argc, char** argv) {
     (void)argc;
@@ -101,7 +106,7 @@ int main(int argc, char** argv) {
                     printf("New socket = %d\n", news);
                 } else {
                     printf("<else-block> i=%d\n", i);
-
+                    handle_request(i);
                     if (recv(i, info, sizeof(info), 0)) {
                         printf("Message received: %s\n", info);
                         memset(info, 0, sizeof(info));
@@ -115,4 +120,97 @@ int main(int argc, char** argv) {
     freeaddrinfo(servinfo);
     close(s_tcp);
     return 0;
+}
+
+#define LIST 0
+#define FILES 1
+#define GET 2
+#define PUT 3
+#define QUIT 4
+#define MAX_FILE_NAME 255
+
+int read_command(int stream) {
+  uint8_t buffer;
+  recv(stream, &buffer, sizeof(buffer), 0);
+  return (int )buffer;
+}
+
+void read_filename(char *buffer, int buffer_size, int stream) {
+  int size = 0;
+  bool done = false;
+  while(size < buffer_size && !done) {
+    recv(stream, buffer + size, 1,  0);
+    if(buffer[size] == '\0' || buffer[size] == '\n') {
+      buffer[size] = '\0';
+      done = true;
+    }
+    //printf("%d:%s\n", size, buffer);
+    size++;
+  }
+}
+
+void handle_list(int stream) {
+  printf("list\n");
+}
+
+void handle_files(int stream) {
+  printf("files\n");
+}
+
+void handle_get(int stream) {
+  printf("get\n");
+  char filename[MAX_FILE_NAME] = {0};
+  read_filename(filename, MAX_FILE_NAME, stream);
+  printf("filename: %s\n", filename);
+  int file = open(filename, O_RDONLY);
+  int bytes = sendfile(stream, file, NULL, 1);
+  //printf("%d bytes send\n", bytes);
+  while(bytes > 0) {
+    bytes = sendfile(stream, file, NULL, 1);
+    //printf("%d bytes send\n", bytes);
+  }
+  char end_of_file = EOF;
+  send(stream, &end_of_file, 1, 0);
+  int cls = close(file);
+  printf("closed file: %d\n", cls);
+}
+
+void handle_put(int stream) {
+  printf("put\n");
+  char filename[MAX_FILE_NAME] = {0};
+  read_filename(filename, MAX_FILE_NAME, stream);
+  printf("%s\n", filename);
+}
+
+void handle_quit() {
+  printf("quit\n");
+}
+
+void handle_error() {
+  printf("error\n");
+}
+
+void handle_request(int stream) {
+  int command = read_command(stream);
+  switch(command) {
+    case LIST:
+      handle_list(stream);
+      break;
+    case FILES:
+      handle_files(stream);
+      break;
+    case GET:
+      handle_get(stream);
+      break;
+    case PUT:
+      handle_put(stream);
+      break;
+    case QUIT:
+      handle_quit();
+      break;
+    default:
+      handle_error();
+      break;
+  }
+  printf("done\n");
 }
