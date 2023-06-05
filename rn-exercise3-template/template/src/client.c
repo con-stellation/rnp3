@@ -10,6 +10,7 @@
 // TODO: Remove this block.
 #define SRV_ADDRESS "127.0.0.1"
 #define SRV_PORT 7777
+#define MAX_FILE_NAME 255
 
 void *get_in_addr(struct sockaddr *sa){
   if (sa->sa_family == AF_INET) {
