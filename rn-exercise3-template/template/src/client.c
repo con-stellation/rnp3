@@ -10,6 +10,9 @@
 // TODO: Remove this block.
 #define SRV_ADDRESS "127.0.0.1"
 #define SRV_PORT 7777
+#define MAX_FILE_NAME 255
+
+void read_request(int);
 
 void *get_in_addr(struct sockaddr *sa){
   if (sa->sa_family == AF_INET) {
@@ -25,7 +28,7 @@ int main(int argc, char** argv) {
   int s_tcp;
   struct sockaddr_in sa;
   unsigned int sa_len = sizeof(struct sockaddr_in);
-  ssize_t n = 0;
+  // ssize_t n = 0;
 
   sa.sin_family = AF_INET;
   sa.sin_port = htons(SRV_PORT);
@@ -46,19 +49,68 @@ int main(int argc, char** argv) {
   }
 
   while(1) {
-    char buffer[256];
-    printf("enter msg\n");
-    fgets(buffer, sizeof(buffer), stdin);
-    if(buffer[0] == '\\' && buffer[1] == '0') {
-      buffer[0] = (char) 0;
-      send(s_tcp, buffer, 1, 0);
-      break;
-    }
+    read_request(s_tcp);
+    // char buffer[256];
+    // printf("enter msg\n");
+    // fgets(buffer, sizeof(buffer), stdin);
+    // if(buffer[0] == '\\' && buffer[1] == '0') {
+    //   buffer[0] = (char) 0;
+    //   send(s_tcp, buffer, 1, 0);
+    //   break;
+    // }
 
-    if ((n = send(s_tcp, buffer, strlen(buffer), 0)) > 0) {
-      printf("Message %s sent (%zi Bytes).\n", buffer, n);
-    }
+    // if ((n = send(s_tcp, buffer, strlen(buffer), 0)) > 0) {
+    //   printf("Message %s sent (%zi Bytes).\n", buffer, n);
+    // }
   }
 
   close(s_tcp);
+}
+
+void handle_error(char* return_value) {
+  if(return_value == NULL) {
+    printf("Error\n");
+    exit(1);
+  }
+}
+
+int read_command() {
+  char command[2];
+  handle_error(
+    fgets(command, sizeof(command), stdin));
+  return (int) command[0] - (int) '0';
+}
+
+void read_request(int stream) {
+  printf("Enter Command:\n");
+  printf("0) List\n");
+  printf("1) Files\n");
+  printf("2) Get\n");
+  printf("3) Put\n");
+  printf("4) Quit\n");
+  uint8_t command = (uint8_t) read_command();
+  send(stream, &command, sizeof(command), 0);
+  if(command == 3 || command == 2) {
+    printf("enter filename: \n");
+    char buffer[MAX_FILE_NAME] = {0};
+    char unused[2]; //flush the newline character from the console
+    handle_error(
+      fgets(unused, sizeof(unused), stdin));
+    handle_error(
+      fgets(buffer, sizeof(buffer), stdin));
+    send(stream, buffer, strlen(buffer), 0);
+  }
+  if(command == 2) {
+    char buffer[2] = {0};
+    int bytes = 1;
+    //printf("bytes received: %d\n", bytes);
+    do {
+      bytes = recv(stream, buffer, 1, 0);
+      //printf("bytes received: %d\n", bytes);
+      if(buffer[0] == EOF){
+        break;
+      }
+      printf("%s", buffer);
+    } while(bytes > 0);
+  }
 }

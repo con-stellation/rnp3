@@ -45,7 +45,8 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    char info[BUFFER_SIZE], temp[INET6_ADDRSTRLEN];
+    // char info[BUFFER_SIZE];
+    char temp[INET6_ADDRSTRLEN];
 
 /*    sa.sin_family = AF_INET;
     sa.sin_port = htons(SRV_PORT);
@@ -112,11 +113,13 @@ int main(int argc, char** argv) {
                 } else {
                     printf("<else-block> i=%d\n", i);
                     handle_request(i);
+
                     /*if (recv(i, info, sizeof(info), 0)) {
                         printf("Message received: %s\n", info);
                         memset(info, 0, sizeof(info));
 
                     }*/
+
                     printf("Nach receive\n");
                 }
             }
@@ -156,10 +159,12 @@ void read_filename(char *buffer, int buffer_size, int stream) {
 
 void handle_list(int stream) {
   printf("list\n");
+  send(stream, NULL, 0, 0);
 }
 
 void handle_files(int stream) {
   printf("files\n");
+  send(stream, NULL, 0, 0);
 }
 
 void handle_get(int stream) {
@@ -185,6 +190,15 @@ void handle_put(int stream) {
   char filename[MAX_FILE_NAME] = {0};
   read_filename(filename, MAX_FILE_NAME, stream);
   printf("%s\n", filename);
+  int file = open(filename, O_WRONLY);
+  int bytes = sendfile(file, stream, NULL, 1);
+  //printf("%d bytes send\n", bytes);
+  while(bytes > 0) {
+    bytes = sendfile(file, stream, NULL, 1);
+    //printf("%d bytes send\n", bytes);
+  }
+  int cls = close(file);
+  printf("closed file: %d\n", cls);
 }
 
 void handle_quit(int stream) {
