@@ -47,18 +47,19 @@ int main(int argc, char** argv) {
   }
 
   while(1) {
-    char buffer[256];
-    printf("enter msg\n");
-    fgets(buffer, sizeof(buffer), stdin);
-    if(buffer[0] == '\\' && buffer[1] == '0') {
-      buffer[0] = (char) 0;
-      send(s_tcp, buffer, 1, 0);
-      break;
-    }
+    read_request(s_tcp);
+    // char buffer[256];
+    // printf("enter msg\n");
+    // fgets(buffer, sizeof(buffer), stdin);
+    // if(buffer[0] == '\\' && buffer[1] == '0') {
+    //   buffer[0] = (char) 0;
+    //   send(s_tcp, buffer, 1, 0);
+    //   break;
+    // }
 
-    if ((n = send(s_tcp, buffer, strlen(buffer), 0)) > 0) {
-      printf("Message %s sent (%zi Bytes).\n", buffer, n);
-    }
+    // if ((n = send(s_tcp, buffer, strlen(buffer), 0)) > 0) {
+    //   printf("Message %s sent (%zi Bytes).\n", buffer, n);
+    // }
   }
 
   close(s_tcp);
