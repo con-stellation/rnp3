@@ -28,7 +28,7 @@ int main(int argc, char** argv) {
   int s_tcp;
   struct sockaddr_in sa;
   unsigned int sa_len = sizeof(struct sockaddr_in);
-  ssize_t n = 0;
+  // ssize_t n = 0;
 
   sa.sin_family = AF_INET;
   sa.sin_port = htons(SRV_PORT);
@@ -67,9 +67,17 @@ int main(int argc, char** argv) {
   close(s_tcp);
 }
 
+void handle_error(char* return_value) {
+  if(return_value == NULL) {
+    printf("Error\n");
+    exit(1);
+  }
+}
+
 int read_command() {
   char command[2];
-  fgets(command, sizeof(command), stdin);
+  handle_error(
+    fgets(command, sizeof(command), stdin));
   return (int) command[0] - (int) '0';
 }
 
@@ -86,22 +94,23 @@ void read_request(int stream) {
     printf("enter filename: \n");
     char buffer[MAX_FILE_NAME] = {0};
     char unused[2]; //flush the newline character from the console
-    fgets(unused, sizeof(unused), stdin);
-    fgets(buffer, sizeof(buffer), stdin);
+    handle_error(
+      fgets(unused, sizeof(unused), stdin));
+    handle_error(
+      fgets(buffer, sizeof(buffer), stdin));
     send(stream, buffer, strlen(buffer), 0);
   }
   if(command == 2) {
     char buffer[2] = {0};
-    int bytes = recv(stream, buffer, 1, 0);
-    printf("%s", buffer);
+    int bytes = 1;
     //printf("bytes received: %d\n", bytes);
-    while(bytes > 0) {
+    do {
       bytes = recv(stream, buffer, 1, 0);
       //printf("bytes received: %d\n", bytes);
       if(buffer[0] == EOF){
         break;
       }
       printf("%s", buffer);
-    }
+    } while(bytes > 0);
   }
 }

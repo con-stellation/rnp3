@@ -43,7 +43,8 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    char info[BUFFER_SIZE], temp[INET6_ADDRSTRLEN];
+    // char info[BUFFER_SIZE];
+    char temp[INET6_ADDRSTRLEN];
 
 /*    sa.sin_family = AF_INET;
     sa.sin_port = htons(SRV_PORT);
@@ -151,10 +152,12 @@ void read_filename(char *buffer, int buffer_size, int stream) {
 
 void handle_list(int stream) {
   printf("list\n");
+  send(stream, NULL, 0, 0);
 }
 
 void handle_files(int stream) {
   printf("files\n");
+  send(stream, NULL, 0, 0);
 }
 
 void handle_get(int stream) {
