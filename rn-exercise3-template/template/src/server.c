@@ -131,9 +131,26 @@ int main(int argc, char** argv) {
 #define MAX_FILE_NAME 255
 
 int read_command(int stream) {
-  uint8_t buffer;
-  recv(stream, &buffer, sizeof(buffer), 0);
-  return (int )buffer;
+  char buffer[6] = { '\0' };
+  for(int i = 0; i < 6; i++) {
+    recv(stream, buffer + i, 1, 0);
+    if(buffer[i] == ' ')
+      break;
+  }
+
+  int command;
+  if(strcmp("List ", buffer) == 0) {
+    command = 0;
+  }else if(strcmp("Files ", buffer) == 0) {
+    command = 1;
+  }else if(strcmp("Get ", buffer) == 0) {
+    command = 2;
+  }else if(strcmp("Put ", buffer) == 0) {
+    command = 3;
+  }else if(strcmp("Quit ", buffer) == 0) {
+    command = 4;
+  }
+  return command;
 }
 
 void read_filename(char *buffer, int buffer_size, int stream) {
