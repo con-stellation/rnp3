@@ -107,11 +107,11 @@ int main(int argc, char** argv) {
                 } else {
                     printf("<else-block> i=%d\n", i);
                     handle_request(i);
-                    if (recv(i, info, sizeof(info), 0)) {
-                        printf("Message received: %s\n", info);
-                        memset(info, 0, sizeof(info));
+                    // if (recv(i, info, sizeof(info), 0)) {
+                    //     printf("Message received: %s\n", info);
+                    //     memset(info, 0, sizeof(info));
 
-                    }
+                    // }
                     printf("Nach receive\n");
                 }
             }
@@ -180,6 +180,15 @@ void handle_put(int stream) {
   char filename[MAX_FILE_NAME] = {0};
   read_filename(filename, MAX_FILE_NAME, stream);
   printf("%s\n", filename);
+  int file = open(filename, O_WRONLY);
+  int bytes = sendfile(file, stream, NULL, 1);
+  //printf("%d bytes send\n", bytes);
+  while(bytes > 0) {
+    bytes = sendfile(file, stream, NULL, 1);
+    //printf("%d bytes send\n", bytes);
+  }
+  int cls = close(file);
+  printf("closed file: %d\n", cls);
 }
 
 void handle_quit() {
