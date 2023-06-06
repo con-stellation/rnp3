@@ -12,6 +12,8 @@
 #define SRV_PORT 7777
 #define MAX_FILE_NAME 255
 
+void read_request(int);
+
 void *get_in_addr(struct sockaddr *sa){
   if (sa->sa_family == AF_INET) {
   return &(((struct sockaddr_in*)sa)->sin_addr);
