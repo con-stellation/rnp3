@@ -14,6 +14,8 @@
 #define SRV_PORT 7777
 
 void handle_request(int);
+int client_count;
+int* connected_clients;
 
 int main(int argc, char** argv) {
     (void)argc;
@@ -96,6 +98,9 @@ int main(int argc, char** argv) {
                         close(s_tcp);
                         return 1;
                     }
+                    connected_clients[client_count] = news;
+                    client_count++;
+
                     FD_SET(news, &all_fds);
                     if (maxfd < news) {
                         printf("maxfd<news\n");
@@ -107,11 +112,11 @@ int main(int argc, char** argv) {
                 } else {
                     printf("<else-block> i=%d\n", i);
                     handle_request(i);
-                    if (recv(i, info, sizeof(info), 0)) {
+                    /*if (recv(i, info, sizeof(info), 0)) {
                         printf("Message received: %s\n", info);
                         memset(info, 0, sizeof(info));
 
-                    }
+                    }*/
                     printf("Nach receive\n");
                 }
             }
@@ -182,7 +187,14 @@ void handle_put(int stream) {
   printf("%s\n", filename);
 }
 
-void handle_quit() {
+void handle_quit(int stream) {
+  for(int i=0; i<=client_count; i++){
+      if(connected_clients[i] == stream){
+          connected_clients[i] = -1;
+      }
+  } //nicht nötig durch FD_SET? S42 im Handbuch
+  client_count--;
+  close(stream);
   printf("quit\n");
 }
 
@@ -206,7 +218,7 @@ void handle_request(int stream) {
       handle_put(stream);
       break;
     case QUIT:
-      handle_quit();
+      handle_quit(stream);
       break;
     default:
       handle_error();
