@@ -171,25 +171,55 @@ bool read_request(int stream) {
             memset(buf, 0, 2);
         } while(bytes > 0);
     }
+    char* source = NULL;
     if(command == PUT) {
-        for(int i = 0; i < strlen(filename); i++)
+        for(unsigned long i = 0; i < strlen(filename); i++)
             if(filename[i] == '\n') {
                 filename[i] = '\0';
                 break;
             }
-        for(int i = 0; i <  strlen(filename); i++)
+        for(unsigned long int i = 0; i <  strlen(filename); i++)
             printf("%c\n", filename[i]);
-        int file = open(filename, O_RDONLY);
-        int bytes;
-        do {
-            bytes = sendfile(stream, file, NULL, 1);
-            printf("%d bytes send\n", bytes);
-        } while(bytes > 0);
-        char end_of_file = EOF;
-        send(stream, &end_of_file, 1, 0);
-        int cls = close(file);
-        printf("closed file: %d\n", cls);
+
+
+        FILE* file = fopen(filename, "r");
+        if(file == NULL){
+            perror("Fileopen\n");
+            return -1;
+        }
+        if (fseek(file, 0L, SEEK_END) == 0) {
+            /* Get the size of the file. */
+            long bufsize = ftell(file);
+            if (bufsize == -1) { /* Error */ }
+
+            /* Allocate our buffer to that size. */
+            source = malloc(sizeof(char) * (bufsize + 1));
+
+            /* Go back to the start of the file. */
+            if (fseek(file, 0L, SEEK_SET) != 0) { /* Error */ }
+
+            /* Read the entire file into memory. */
+            size_t newLen = fread(source, sizeof(char), bufsize, file);
+            if ( ferror( file ) != 0 ) {
+                fputs("Error reading file", stderr);
+            } else {
+                source[newLen++] = '\0'; /* Just to be safe. */
+            }
+        }
+        char filelines[2] = {0};
+        while(fgets(filelines, 2, file) != NULL){
+            send(stream, filelines, sizeof source, 0);
+            memset(filelines, 0, 2);
+        };
+        char eof[1] = {EOF};
+        send(stream, eof, sizeof eof, 0);
+        fclose(file);
     }
+
+    free(source); /* Don't forget to call free() later! */
+
+    //printf("closed file: %d\n", cls);
+
 
     return(command == QUIT);
 }

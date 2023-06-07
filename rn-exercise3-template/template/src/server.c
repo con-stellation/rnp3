@@ -268,32 +268,24 @@ void handle_put(int stream) {
   char filename[MAX_FILE_NAME] = {0};
   read_filename(filename, MAX_FILE_NAME, stream);
   printf("%s\n", filename);
-  int file = open(filename, O_CREAT | O_WRONLY);
-  if(file == -1) {
-    switch(errno) {
-      case EACCES:
-        printf("Access error\n");
-        break;
-      case EFAULT:
-        printf("fault\n");
-        break;
-      case EINVAL:
-        printf("unsupported characters in pathname\n");
-        break;
-      case ENOENT:
-        printf("file does not exist\n");
-        break;
-      default:
-        printf("unknown error\n");
-        break;
-    }
+  FILE * file = fopen(filename, "w");
+  if(file == NULL) {
+    printf("File could not be opened");
     exit(1);
   }
-  int bytes;
-  do {
-    bytes = sendfile(file, stream, NULL, 1);
-    printf("%d bytes send\n", bytes);
-  } while(bytes > 0);
+  int bytes = 1;
+  char buf[2] = {0};
+    do {
+        bytes = recv(stream, buf, 1, 0);
+        if(buf[0] == EOF){
+            break;
+        }
+        printf("%c", buf[0]);
+        fprintf(file,"%c", buf[0]);
+        memset(buf, 0, 2);
+    } while(bytes > 0);
+
+
   if(bytes == -1) {
     switch(errno) {
       case EAGAIN:
@@ -323,8 +315,8 @@ void handle_put(int stream) {
     }
     exit(1);
   }
-  int cls = close(file);
-  printf("closed file: %d\n", cls);
+  fclose(file);
+  //printf("closed file: %d\n", cls);
   char hostname[MAX_HOST_NAME];
   if(gethostname(hostname, MAX_HOST_NAME) != 0) {
     printf("cant get hostname\n");
@@ -336,7 +328,7 @@ void handle_put(int stream) {
   char* ip = "0.0.0.0\n";
   send(stream, ip, strlen(ip), 0);
   char* time = "1.1.1970:00:00";
-  send(stream, ip, strlen(ip), 0);
+  send(stream, time, strlen(time), 0);
   char n = '\0';
   send(stream, &n, 1, 0);
 }
