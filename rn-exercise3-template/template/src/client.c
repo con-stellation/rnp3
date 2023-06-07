@@ -55,7 +55,8 @@ int main(int argc, char** argv) {
     }
 
     while(1) {
-        read_request(s_tcp);
+        if(read_request(s_tcp))
+            break;
         // char buffer[256];
         // printf("enter msg\n");
         // fgets(buffer, sizeof(buffer), stdin);
