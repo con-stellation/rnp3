@@ -159,7 +159,7 @@ int main(int argc, char** argv) {
 int read_command(int stream) {
 
   printf("reading command\n");
-  char buffer[7];
+  char buffer[7] = {0};
   for(int i = 0; i < 6; i++) {
     recv(stream, &(buffer[i]), 1, 0);
     printf("command: %s\n", buffer);
@@ -272,7 +272,8 @@ void handle_put(int stream) {
   send(stream, ip, strlen(ip), 0);
   char* time = "1.1.1970:00:00";
   send(stream, ip, strlen(ip), 0);
-  send(stream, &'\0', 1, 0);
+  char n = '\0';
+  send(stream, &n, 1, 0);
 }
 
 void handle_quit(int stream) {
