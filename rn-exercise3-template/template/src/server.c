@@ -198,11 +198,22 @@ void read_filename(char *buffer, int buffer_size, int stream) {
 
 void handle_list(int stream) {
   printf("list\n");
-  int temp[1] = {client_count};
-  send(stream, connected_clients, sizeof connected_clients, 0);
+  char temp[1] = {client_count};
+  printf("Clientcount: %d\n", client_count);
+  char* str = malloc(6*(sizeof (struct clientinformation)));
+  for(int i=0; i<client_count; i++){
+      char* buf1 = malloc(sizeof connected_clients[i].hostname + sizeof connected_clients[i].socket);
+      sprintf(buf1, "%s : %d\n", connected_clients[i].hostname, connected_clients[i].socket);
+      printf("%s",buf1);
+      strcat(str, buf1);
+
+  }
+
   printf("Clientinformationen versendet\n");
-  send(stream, temp, sizeof temp, 0);
-  printf("Clientanzahl versendet\n");
+  char end_of_file[1] = {EOF};
+  strcat(str, temp);
+  strcat(str, end_of_file);
+  send(stream, str, sizeof str, 0);
 }
 
 void handle_files(int stream) {
@@ -275,6 +286,7 @@ void handle_quit(int stream) {
           }
       }
   }
+
   --client_count;
   printf("quit\n");
 }

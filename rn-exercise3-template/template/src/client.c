@@ -89,12 +89,15 @@ int read_command() {
     char command[2];
     handle_error(
             fgets(command, sizeof(command), stdin));
-    return (int) command[0] - (int) '0';
+    printf("command = %c", command[0]);
+    int res = ((int)command[0] - (int)'0');
+    return res;
 }
 
 int read_and_send_command(int stream) {
     int c = read_command();
     char* command = NULL;
+    printf("c= %d\n", c);
     int size;
     switch(c) {
         case LIST:
@@ -149,5 +152,18 @@ void read_request(int stream) {
             }
             printf("%s", buffer);
         } while(bytes > 0);
+    }
+    if(command == 0){
+        char buf[2] = {0};
+        int bytes = 1;
+        do{
+            bytes = recv(stream, buf, sizeof buf, 0);
+            if(buf[0] == EOF){
+                break;
+            }
+            printf("%s", buf);
+            memset(buf, 0, sizeof buf);
+        } while(bytes > 0);
+
     }
 }
