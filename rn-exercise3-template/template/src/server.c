@@ -15,6 +15,13 @@
 
 #define BUFFER_SIZE 256
 #define SRV_PORT 7777
+#define LIST 0
+#define FILES 1
+#define GET 2
+#define PUT 3
+#define QUIT 4
+#define MAX_FILE_NAME 255
+#define MAX_HOST_NAME 255
 struct clientinformation{
     char *hostname;
     int socket;
@@ -149,17 +156,10 @@ int main(int argc, char** argv) {
     return 0;
 }
 
-#define LIST 0
-#define FILES 1
-#define GET 2
-#define PUT 3
-#define QUIT 4
-#define MAX_FILE_NAME 255
-
 int read_command(int stream) {
 
   printf("reading command\n");
-  char buffer[7];
+  char buffer[7] = {0};
   for(int i = 0; i < 6; i++) {
     recv(stream, &(buffer[i]), 1, 0);
     printf("command: %s\n", buffer);
@@ -271,6 +271,20 @@ void handle_put(int stream) {
   }
   int cls = close(file);
   printf("closed file: %d\n", cls);
+  char hostname[MAX_HOST_NAME];
+  if(gethostname(hostname, MAX_HOST_NAME) != 0) {
+    printf("cant get hostname\n");
+    exit(1);
+  }
+  char line[MAX_FILE_NAME + 4];
+  sprintf(line, "OK %s\n", hostname);
+  send(stream, line, strlen(line), 0);
+  char* ip = "0.0.0.0\n";
+  send(stream, ip, strlen(ip), 0);
+  char* time = "1.1.1970:00:00";
+  send(stream, ip, strlen(ip), 0);
+  char n = '\0';
+  send(stream, &n, 1, 0);
 }
 
 void handle_quit(int stream) {

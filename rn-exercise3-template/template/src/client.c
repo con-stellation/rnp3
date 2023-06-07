@@ -6,6 +6,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 // TODO: Remove this block.
 #define SRV_ADDRESS "127.0.0.1"
@@ -17,7 +18,7 @@
 #define QUIT 4
 #define MAX_FILE_NAME 255
 
-void read_request(int);
+bool read_request(int);
 
 void *get_in_addr(struct sockaddr *sa){
     if (sa->sa_family == AF_INET) {
@@ -88,10 +89,12 @@ int read_command() {
     printf("4) Quit\n");
     char command[2];
     handle_error(
-            fgets(command, sizeof(command), stdin));
-    printf("command = %c", command[0]);
-    int res = ((int)command[0] - (int)'0');
-    return res;
+        fgets(command, sizeof(command), stdin));
+    char unused[2]; //flush the newline character from the console
+    handle_error(
+        fgets(unused, sizeof(unused), stdin));
+    printf("%c\n", command[0]);
+    return (int) command[0] - (int) '0';
 }
 
 int read_and_send_command(int stream) {
@@ -127,20 +130,20 @@ int read_and_send_command(int stream) {
     return c;
 }
 
-void read_request(int stream) {
+bool read_request(int stream) {
     int command = read_and_send_command(stream);
 
-    if(command == 3 || command == 2) {
+    if(command == GET || command == PUT) {
         printf("enter filename: \n");
         char buffer[MAX_FILE_NAME] = {0};
-        char unused[2]; //flush the newline character from the console
+        // char unused[2]; //flush the newline character from the console
+        // handle_error(
+        //     fgets(unused, sizeof(unused), stdin));
         handle_error(
-                fgets(unused, sizeof(unused), stdin));
-        handle_error(
-                fgets(buffer, sizeof(buffer), stdin));
+            fgets(buffer, sizeof(buffer), stdin));
         send(stream, buffer, strlen(buffer), 0);
     }
-    if(command == 2) {
+    if(command == GET) {
         char buffer[2] = {0};
         int bytes = 1;
         //printf("bytes received: %d\n", bytes);
@@ -153,7 +156,7 @@ void read_request(int stream) {
             printf("%s", buffer);
         } while(bytes > 0);
     }
-    if(command == 0){
+    if(command == LIST){
         char buf[2] = {0};
         int bytes = 1;
         do{
@@ -161,9 +164,11 @@ void read_request(int stream) {
             if(buf[0] == EOF){
                 break;
             }
-            printf("%s", buf);
+            printf("Bufferinhalt: %s", buf);
             memset(buf, 0, sizeof buf);
         } while(bytes > 0);
 
     }
+
+    return(command == QUIT);
 }
