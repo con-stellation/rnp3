@@ -268,7 +268,7 @@ void handle_put(int stream) {
   char filename[MAX_FILE_NAME] = {0};
   read_filename(filename, MAX_FILE_NAME, stream);
   printf("%s\n", filename);
-  int file = open(filename, O_CREAT | O_WRONLY);
+  int file = open(filename, O_CREAT | O_RDWR, S_IRWXU | S_IRWXG | S_IRWXO);
   if(file == -1) {
     switch(errno) {
       case EACCES:
@@ -306,7 +306,7 @@ void handle_put(int stream) {
         printf("Bad address\n");
         break;
       case EINVAL:
-        printf("Invalid file desciptor");
+        printf("Invalid file desciptor\n");
         break;
       case EIO:
         printf("some IO error");
