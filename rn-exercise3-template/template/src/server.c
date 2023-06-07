@@ -9,6 +9,8 @@
 #include <stdbool.h>
 #include <sys/sendfile.h>
 #include <fcntl.h>
+#include <errno.h>
+#include <stdlib.h>
 
 #define BUFFER_SIZE 256
 #define SRV_PORT 7777
@@ -131,14 +133,15 @@ int main(int argc, char** argv) {
 #define MAX_FILE_NAME 255
 
 int read_command(int stream) {
-  char buffer[6] = { '\0' };
+  printf("reading command\n");
+  char buffer[7];
   for(int i = 0; i < 6; i++) {
-    recv(stream, buffer + i, 1, 0);
-    if(buffer[i] == ' ')
+    recv(stream, &(buffer[i]), 1, 0);
+    printf("command: %s\n", buffer);
+    if(buffer[i] == ' ' || buffer[i] == '\n')
       break;
   }
-
-  int command;
+  int command = 0;
   if(strcmp("List ", buffer) == 0) {
     command = 0;
   }else if(strcmp("Files ", buffer) == 0) {
@@ -158,6 +161,7 @@ void read_filename(char *buffer, int buffer_size, int stream) {
   bool done = false;
   while(size < buffer_size && !done) {
     recv(stream, buffer + size, 1,  0);
+    printf("dbg: %d\n", (int) buffer[size]);
     if(buffer[size] == '\0' || buffer[size] == '\n') {
       buffer[size] = '\0';
       done = true;
@@ -183,6 +187,24 @@ void handle_get(int stream) {
   read_filename(filename, MAX_FILE_NAME, stream);
   printf("filename: %s\n", filename);
   int file = open(filename, O_RDONLY);
+  if(file == -1) {
+    switch(errno) {
+      case EACCES:
+        printf("Access error\n");
+        break;
+      case EFAULT:
+        printf("fault\n");
+        break;
+      case EINVAL:
+        printf("unsupported characters in pathname\n");
+        break;
+      case ENOENT:
+        printf("file does not exist\n");
+        break;
+    }
+    printf("error\n");
+    exit(1);
+  }
   int bytes = sendfile(stream, file, NULL, 1);
   //printf("%d bytes send\n", bytes);
   while(bytes > 0) {

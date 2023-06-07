@@ -10,6 +10,11 @@
 // TODO: Remove this block.
 #define SRV_ADDRESS "127.0.0.1"
 #define SRV_PORT 7777
+#define LIST 0
+#define FILES 1
+#define GET 2
+#define PUT 3
+#define QUIT 4
 #define MAX_FILE_NAME 255
 
 void read_request(int);
@@ -75,21 +80,53 @@ void handle_error(char* return_value) {
 }
 
 int read_command() {
-  char command[2];
-  handle_error(
-    fgets(command, sizeof(command), stdin));
-  return (int) command[0] - (int) '0';
-}
-
-void read_request(int stream) {
   printf("Enter Command:\n");
   printf("0) List\n");
   printf("1) Files\n");
   printf("2) Get\n");
   printf("3) Put\n");
   printf("4) Quit\n");
-  uint8_t command = (uint8_t) read_command();
-  send(stream, &command, sizeof(command), 0);
+  char command[2];
+  handle_error(
+    fgets(command, sizeof(command), stdin));
+  return (int) command[0] - (int) '0';
+}
+
+int read_and_send_command(int stream) {
+  int c = read_command();
+  char* command = NULL;
+  int size;
+  switch(c) {
+    case LIST:
+      command = "List ";
+      size = 5;
+      break;
+    case FILES:
+      command = "Files ";
+      size = 6;
+      break;
+    case GET:
+      command = "Get ";
+      size = 4;
+      break;
+    case PUT:
+      command = "Put ";
+      size = 4;
+      break;
+    case QUIT:
+    default:
+      command = "Quit ";
+      size = 5;
+      break;
+  }
+  printf("%s: %d\n", command, size);
+  send(stream, command, size, 0);
+  return c;
+}
+
+void read_request(int stream) {
+  int command = read_and_send_command(stream);
+
   if(command == 3 || command == 2) {
     printf("enter filename: \n");
     char buffer[MAX_FILE_NAME] = {0};
