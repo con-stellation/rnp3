@@ -179,18 +179,24 @@ bool read_request(int stream) {
                 break;
             }
         for(unsigned long int i = 0; i <  strlen(filename); i++)
-            printf("%c\n", filename[i]);
+            printf("??? %c\n", filename[i]);
 
 
         FILE* file = fopen(filename, "r");
         if(file == NULL){
             perror("Fileopen\n");
+            printf("Error Filename: %s\n", filename);
             return -1;
         }
+        printf("Filename: %s\n", filename);
         if (fseek(file, 0L, SEEK_END) == 0) {
             /* Get the size of the file. */
+            printf("Made it to fseek. Filename: %s\n", filename);
             long bufsize = ftell(file);
-            if (bufsize == -1) { /* Error */ }
+            if (bufsize == -1) {
+                /* Error */
+                perror("ftell");
+            }
 
             /* Allocate our buffer to that size. */
             source = malloc(sizeof(char) * (bufsize + 1));
@@ -203,16 +209,28 @@ bool read_request(int stream) {
             if ( ferror( file ) != 0 ) {
                 fputs("Error reading file", stderr);
             } else {
-                source[newLen++] = '\0'; /* Just to be safe. */
+                source[newLen++] = EOF; /* Just to be safe. */
             }
         }
-        char filelines[2] = {0};
-        while(fgets(filelines, 2, file) != NULL){
-            send(stream, filelines, sizeof source, 0);
-            memset(filelines, 0, 2);
+        printf("Source: %s\n\n", source);
+        char filelines[1] = {0};
+        int index = 0;
+        while(1){
+            if(source[index] == EOF){
+                filelines[0] = source[index];
+                send(stream, filelines, 1, 0);
+                break;
+            }
+            printf("%c", source[index]);
+            filelines[0] = source[index];
+            send(stream, filelines, 1, 0);
+            memset(filelines, 0, 1);
+            index++;
         };
-        char eof[1] = {EOF};
-        send(stream, eof, sizeof eof, 0);
+        filelines[0] = EOF;
+        send(stream, filelines, 1, 0);
+       // char eof[1] = {EOF};
+       // send(stream, eof, sizeof eof, 0);
         fclose(file);
     }
 

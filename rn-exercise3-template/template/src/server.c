@@ -275,16 +275,33 @@ void handle_put(int stream) {
   }
   int bytes = 1;
   char buf[2] = {0};
+  char* str = NULL;
+    int str_size = 0;
+    int str_capacity = 0;
     do {
         bytes = recv(stream, buf, 1, 0);
         if(buf[0] == EOF){
             break;
         }
-        printf("%c", buf[0]);
-        fprintf(file,"%c", buf[0]);
+        //printf("%c", buf[0]);
+        if (str_size >= str_capacity - 1) {
+            // Den Speicher für str erweitern
+            str_capacity += 1;
+            char* new_str = realloc(str, str_capacity);
+            if (new_str == NULL) {
+                printf("Fehler: Speicher konnte nicht erweitert werden");
+                exit(1);
+            }
+            str = new_str;
+            printf("Neuer Zuwachs: %s\n", str);
+            strcat(str, &buf[0]);
+        }
+        //strcat(str, &buf[0]);
         memset(buf, 0, 2);
     } while(bytes > 0);
-
+    printf("Content: %s", str);
+    fprintf(file,"%s", str);
+    free(str);
 
   if(bytes == -1) {
     switch(errno) {
