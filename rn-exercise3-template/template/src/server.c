@@ -264,6 +264,7 @@ void handle_get(int stream) {
 }
 
 void handle_put(int stream) {
+
   printf("put\n");
   char filename[MAX_FILE_NAME] = {0};
   read_filename(filename, MAX_FILE_NAME, stream);
@@ -278,8 +279,14 @@ void handle_put(int stream) {
   char* str = NULL;
     int str_size = 0;
     int str_capacity = 0;
+
     do {
         bytes = recv(stream, buf, 1, 0);
+        if(bytes == -1) {
+            printf("error\n");
+            exit(1);
+        }
+        printf("%d\n", (int) buf[0]);
         if(buf[0] == EOF){
             break;
         }
@@ -297,57 +304,62 @@ void handle_put(int stream) {
             strcat(str, &buf[0]);
         }
         //strcat(str, &buf[0]);
+
+        if(fprintf(file,"%c", buf[0]) == -1) {
+            printf("error\n");
+            exit(1);
+        }
         memset(buf, 0, 2);
     } while(bytes > 0);
     printf("Content: %s", str);
     fprintf(file,"%s", str);
     free(str);
 
-  if(bytes == -1) {
-    switch(errno) {
-      case EAGAIN:
-        printf("Nonblocking\n");
-        break;
-      case EBADF:
-        printf("Missing flag\n");
-        break;
-      case EFAULT:
-        printf("Bad address\n");
-        break;
-      case EINVAL:
-        printf("Invalid file desciptor\n");
-        break;
-      case EIO:
-        printf("some IO error");
-        break;
-      case ENOMEM:
-        printf("out of memory\n");
-        break;
-      case EOVERFLOW:
-        printf("overflow\n");
-        break;
-      default:
-        printf("unknown error\n");
-        break;
+    if(bytes == -1) {
+        switch(errno) {
+        case EAGAIN:
+            printf("Nonblocking\n");
+            break;
+        case EBADF:
+            printf("Missing flag\n");
+            break;
+        case EFAULT:
+            printf("Bad address\n");
+            break;
+        case EINVAL:
+            printf("Invalid file desciptor\n");
+            break;
+        case EIO:
+            printf("some IO error");
+            break;
+        case ENOMEM:
+            printf("out of memory\n");
+            break;
+        case EOVERFLOW:
+            printf("overflow\n");
+            break;
+        default:
+            printf("unknown error\n");
+            break;
+        }
+        exit(1);
     }
-    exit(1);
-  }
-  fclose(file);
-  //printf("closed file: %d\n", cls);
-  char hostname[MAX_HOST_NAME];
-  if(gethostname(hostname, MAX_HOST_NAME) != 0) {
-    printf("cant get hostname\n");
-    exit(1);
-  }
-  char line[MAX_FILE_NAME + 4];
-  sprintf(line, "OK %s\n", hostname);
-  send(stream, line, strlen(line), 0);
-  char* ip = "0.0.0.0\n";
-  send(stream, ip, strlen(ip), 0);
-  char* time = "1.1.1970:00:00";
-  send(stream, time, strlen(time), 0);
-  char n = '\0';
-  send(stream, &n, 1, 0);
+    fclose(file);
+    //printf("closed file: %d\n", cls);
+    char hostname[MAX_HOST_NAME];
+    if(gethostname(hostname, MAX_HOST_NAME) != 0) {
+        printf("cant get hostname\n");
+        exit(1);
+    }
+    char line[MAX_FILE_NAME + 4];
+    sprintf(line, "OK %s\n", hostname);
+    send(stream, line, strlen(line), 0);
+    char* ip = "0.0.0.0\n";
+    send(stream, ip, strlen(ip), 0);
+    char* time = "1.1.1970:00:00";
+    send(stream, time, strlen(time), 0);
+    char n = '\0';
+    send(stream, &n, 1, 0);
 }
 
 void handle_quit(int stream) {

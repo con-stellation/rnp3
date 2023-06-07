@@ -226,6 +226,7 @@ bool read_request(int stream) {
             send(stream, filelines, 1, 0);
             memset(filelines, 0, 1);
             index++;
+
         };
         filelines[0] = EOF;
         send(stream, filelines, 1, 0);
