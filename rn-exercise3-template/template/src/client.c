@@ -156,7 +156,7 @@ bool read_request(int stream) {
             printf("%s", buffer);
         } while(bytes > 0);
     }
-    if(command == LIST){
+    if(command == 0){
         char buf[2] = {0};
         int bytes = 1;
         do{
