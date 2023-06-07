@@ -44,4 +44,8 @@ src/CMakeFiles/server.dir/server.c.o: \
  /usr/include/bits/unistd_ext.h /usr/include/string.h \
  /usr/include/bits/types/locale_t.h /usr/include/bits/types/__locale_t.h \
  /usr/include/strings.h /usr/include/netdb.h /usr/include/rpc/netdb.h \
- /usr/include/bits/netdb.h
+ /usr/include/bits/netdb.h \
+ /usr/lib/gcc/x86_64-redhat-linux/12/include/stdbool.h \
+ /usr/include/sys/sendfile.h /usr/include/fcntl.h \
+ /usr/include/bits/fcntl.h /usr/include/bits/fcntl-linux.h \
+ /usr/include/bits/stat.h /usr/include/bits/struct_stat.h

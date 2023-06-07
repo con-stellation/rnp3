@@ -9,20 +9,29 @@
 #include <stdbool.h>
 #include <sys/sendfile.h>
 #include <fcntl.h>
+#include <malloc.h>
 
 #define BUFFER_SIZE 256
 #define SRV_PORT 7777
-
+struct clientinformation{
+    char *hostname;
+    int socket;
+};
 void handle_request(int);
-int client_count;
-int* connected_clients;
+void rearrangeArray(int);
+int client_count, maxfd;
+struct clientinformation * connected_clients;
+fd_set all_fds, copy_fds;
+
 
 int main(int argc, char** argv) {
     (void)argc;
     (void)argv;
+    connected_clients = malloc(5 * sizeof(struct clientinformation));
+    int s_tcp, news, selectRet;
+    char host[1024];
+    char service[20];
 
-    int s_tcp, news, maxfd, selectRet;
-    fd_set all_fds, copy_fds;
 
     //IP-neutralität gewähren
     int status;
@@ -99,8 +108,7 @@ int main(int argc, char** argv) {
                         close(s_tcp);
                         return 1;
                     }
-                    connected_clients[client_count] = news;
-                    client_count++;
+
 
                     FD_SET(news, &all_fds);
                     if (maxfd < news) {
@@ -109,7 +117,16 @@ int main(int argc, char** argv) {
                     }
                     printf("selectserver: new connection from %s on socket %d\n",
                            inet_ntop(hints.ai_family, (struct sockaddr*)&sa_client, temp, INET6_ADDRSTRLEN), news);
-                    printf("New socket = %d\n", news);
+
+                    getnameinfo((struct sockaddr*)&sa_client, sizeof sa_client, host, sizeof host, service, sizeof service, 0);
+                    struct clientinformation ci;
+                    //muss noch der Fall abgefangen werden, dass mehr als 5 Clients angemeldet sind oder ist dies durch das listen() erledigt?
+                    ci.hostname = host;
+                    ci.socket = news;
+                    connected_clients[client_count] = ci;
+                    client_count++;
+                    printf("New socket = %d (comp. %d), host = %s\n", ci.socket, news, ci.hostname);
+
                 } else {
                     printf("<else-block> i=%d\n", i);
                     handle_request(i);
@@ -138,9 +155,10 @@ int main(int argc, char** argv) {
 #define MAX_FILE_NAME 255
 
 int read_command(int stream) {
-  uint8_t buffer;
-  recv(stream, &buffer, sizeof(buffer), 0);
-  return (int )buffer;
+  int* buffer;
+  recv(stream, &buffer, 5, 0);
+
+  return 7;//(int )buffer;
 }
 
 void read_filename(char *buffer, int buffer_size, int stream) {
@@ -159,7 +177,11 @@ void read_filename(char *buffer, int buffer_size, int stream) {
 
 void handle_list(int stream) {
   printf("list\n");
-  send(stream, NULL, 0, 0);
+  int temp[1] = {client_count};
+  send(stream, connected_clients, sizeof connected_clients, 0);
+  printf("Clientinformationen versendet\n");
+  send(stream, temp, sizeof temp, 0);
+  printf("Clientanzahl versendet\n");
 }
 
 void handle_files(int stream) {
@@ -202,14 +224,26 @@ void handle_put(int stream) {
 }
 
 void handle_quit(int stream) {
-  for(int i=0; i<=client_count; i++){
-      if(connected_clients[i] == stream){
-          connected_clients[i] = -1;
-      }
-  } //nicht nötig durch FD_SET? S42 im Handbuch
-  client_count--;
+
+  //nicht nötig durch FD_SET? S42 im Handbuch
   close(stream);
+  FD_CLR(stream, &all_fds);
+  FD_CLR(stream, &copy_fds);
+  for(int i=0; i<client_count; i++){
+      if(connected_clients[i].socket == stream){
+          if(i!=(client_count-1)){
+              rearrangeArray(i);
+          }
+      }
+  }
+  --client_count;
   printf("quit\n");
+}
+
+void rearrangeArray(int index){
+    for(int i=index; i<(client_count-1); i++){
+        connected_clients[i] = connected_clients[i+1];
+    }
 }
 
 void handle_error() {

@@ -75,7 +75,7 @@ void handle_error(char* return_value) {
 }
 
 int read_command() {
-  char command[2];
+  char command[6];
   handle_error(
     fgets(command, sizeof(command), stdin));
   return (int) command[0] - (int) '0';
