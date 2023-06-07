@@ -208,7 +208,10 @@ bool read_request(int stream) {
         }
         char filelines[2] = {0};
         while(fgets(filelines, 2, file) != NULL){
-            send(stream, filelines, sizeof source, 0);
+            if(send(stream, filelines, sizeof source, 0) == -1){
+                printf("error\n");
+                exit(1);
+            }
             memset(filelines, 0, 2);
         };
         char eof[1] = {EOF};
