@@ -251,12 +251,11 @@ void handle_get(int stream) {
     printf("error\n");
     exit(1);
   }
-  int bytes = sendfile(stream, file, NULL, 1);
-  //printf("%d bytes send\n", bytes);
-  while(bytes > 0) {
+  int bytes;
+  do {
     bytes = sendfile(stream, file, NULL, 1);
     //printf("%d bytes send\n", bytes);
-  }
+  } while(bytes > 0);
   char end_of_file = EOF;
   send(stream, &end_of_file, 1, 0);
   int cls = close(file);
@@ -268,12 +267,60 @@ void handle_put(int stream) {
   char filename[MAX_FILE_NAME] = {0};
   read_filename(filename, MAX_FILE_NAME, stream);
   printf("%s\n", filename);
-  int file = open(filename, O_WRONLY);
-  int bytes = sendfile(file, stream, NULL, 1);
-  //printf("%d bytes send\n", bytes);
-  while(bytes > 0) {
+  int file = open(filename, O_CREAT | O_WRONLY);
+  if(file == -1) {
+    switch(errno) {
+      case EACCES:
+        printf("Access error\n");
+        break;
+      case EFAULT:
+        printf("fault\n");
+        break;
+      case EINVAL:
+        printf("unsupported characters in pathname\n");
+        break;
+      case ENOENT:
+        printf("file does not exist\n");
+        break;
+      default:
+        printf("unknown error\n");
+        break;
+    }
+    exit(1);
+  }
+  int bytes;
+  do {
     bytes = sendfile(file, stream, NULL, 1);
-    //printf("%d bytes send\n", bytes);
+    printf("%d bytes send\n", bytes);
+  } while(bytes > 0);
+  if(bytes == -1) {
+    switch(errno) {
+      case EAGAIN:
+        printf("Nonblocking\n");
+        break;
+      case EBADF:
+        printf("Missing flag\n");
+        break;
+      case EFAULT:
+        printf("Bad address\n");
+        break;
+      case EINVAL:
+        printf("Invalid file desciptor");
+        break;
+      case EIO:
+        printf("some IO error");
+        break;
+      case ENOMEM:
+        printf("out of memory\n");
+        break;
+      case EOVERFLOW:
+        printf("overflow\n");
+        break;
+      default:
+        printf("unknown error\n");
+        break;
+    }
+    exit(1);
   }
   int cls = close(file);
   printf("closed file: %d\n", cls);

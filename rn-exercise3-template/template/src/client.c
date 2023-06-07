@@ -7,6 +7,8 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <sys/sendfile.h>
+#include <fcntl.h>
 
 // TODO: Remove this block.
 #define SRV_ADDRESS "127.0.0.1"
@@ -133,16 +135,16 @@ int read_and_send_command(int stream) {
 
 bool read_request(int stream) {
     int command = read_and_send_command(stream);
+    char filename[MAX_FILE_NAME] = {0};
 
     if(command == GET || command == PUT) {
         printf("enter filename: \n");
-        char buffer[MAX_FILE_NAME] = {0};
         // char unused[2]; //flush the newline character from the console
         // handle_error(
         //     fgets(unused, sizeof(unused), stdin));
         handle_error(
-            fgets(buffer, sizeof(buffer), stdin));
-        send(stream, buffer, strlen(buffer), 0);
+            fgets(filename, sizeof(filename), stdin));
+        send(stream, filename, strlen(filename), 0);
     }
     if(command == GET) {
         char buffer[2] = {0};
@@ -157,7 +159,7 @@ bool read_request(int stream) {
             printf("%s", buffer);
         } while(bytes > 0);
     }
-    if(command == 0){
+    if(command == LIST){
         char buf[2] = {0};
         int bytes = 1;
         do{
@@ -168,7 +170,25 @@ bool read_request(int stream) {
             printf("Bufferinhalt: %s", buf);
             memset(buf, 0, sizeof buf);
         } while(bytes > 0);
-
+    }
+    if(command == PUT) {
+        for(int i = 0; i < strlen(filename); i++)
+            if(filename[i] == '\n') {
+                filename[i] = '\0';
+                break;
+            }
+        for(int i = 0; i <  strlen(filename); i++)
+            printf("%c\n", filename[i]);
+        int file = open(filename, O_RDONLY);
+        int bytes;
+        do {
+            bytes = sendfile(stream, file, NULL, 1);
+            printf("%d bytes send\n", bytes);
+        } while(bytes > 0);
+        char end_of_file = EOF;
+        send(stream, &end_of_file, 1, 0);
+        int cls = close(file);
+        printf("closed file: %d\n", cls);
     }
 
     return(command == QUIT);
