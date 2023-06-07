@@ -96,7 +96,7 @@ int read_command() {
     char unused[2]; //flush the newline character from the console
     handle_error(
         fgets(unused, sizeof(unused), stdin));
-    printf("%c\n", command[0]);
+    printf("Command: %c\n", command[0]);
     return (int) command[0] - (int) '0';
 }
 
@@ -128,7 +128,7 @@ int read_and_send_command(int stream) {
             size = 5;
             break;
     }
-    printf("%s: %d\n", command, size);
+    printf("Command: %s Size: %d\n", command, size);
     send(stream, command, size, 0);
     return c;
 }
@@ -163,12 +163,12 @@ bool read_request(int stream) {
         char buf[2] = {0};
         int bytes = 1;
         do{
-            bytes = recv(stream, buf, sizeof buf, 0);
+            bytes = recv(stream, buf, 1, 0);
             if(buf[0] == EOF){
                 break;
             }
-            printf("Bufferinhalt: %s", buf);
-            memset(buf, 0, sizeof buf);
+            printf("%c", buf[0]);
+            memset(buf, 0, 2);
         } while(bytes > 0);
     }
     if(command == PUT) {
