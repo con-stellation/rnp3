@@ -234,6 +234,13 @@ bool read_request(int stream) {
        // send(stream, eof, sizeof eof, 0);
         fclose(file);
         free(source); /* Don't forget to call free() later! */
+        
+        char byte;
+        do {
+            recv(stream, &byte, 1, 0);
+            printf("%c", byte);
+        } while(byte != '\0');
+        printf("\n");
     }
 
 
