@@ -32,20 +32,27 @@ int client_count, maxfd;
 struct clientinformation * connected_clients;
 fd_set all_fds, copy_fds;
 
+void *get_in_addr(struct sockaddr *sa){
+    if (sa->sa_family == AF_INET) {
+        printf("IPv4\n");
+        return &(((struct sockaddr_in*)sa)->sin_addr);
+    }
+    printf("IPv6\n");
+    return &(((struct sockaddr_in6*)sa)->sin6_addr);
+}
 
 int main(int argc, char** argv) {
     (void)argc;
     (void)argv;
     connected_clients = malloc(5 * sizeof(struct clientinformation));
-    int s_tcp, news, selectRet;
+    int s_tcp, news, selectRetVal;
     char host[1024];
     char service[20];
 
 
     //IP-neutralität gewähren
-    int status;
-    struct addrinfo hints;
-    struct addrinfo *servinfo;
+    int status, yes = 1;
+    struct addrinfo hints, *info, *p;
     struct sockaddr_storage sa_client;
     socklen_t  sa_len;
 
@@ -58,25 +65,39 @@ int main(int argc, char** argv) {
     char port[6];
     sprintf(port, "%d", SRV_PORT);
 
-    if ((status = getaddrinfo(NULL, port, &hints, &servinfo)) != 0) {
+    if ((status = getaddrinfo(NULL, port, &hints, &info)) != 0) {
         perror("getaddrinfo");
-        return 1;
+        exit(1);
     }
 
-    // char info[BUFFER_SIZE];
     char temp[INET6_ADDRSTRLEN];
 
-/*    sa.sin_family = AF_INET;
-    sa.sin_port = htons(SRV_PORT);
-    sa.sin_addr.s_addr = INADDR_ANY;*/
+// loop through all the results and bind to the first we can
+    for(p = info; p != NULL; p = p->ai_next) {
+        if ((s_tcp = socket(p->ai_family, p->ai_socktype,
+        p->ai_protocol)) == -1) {
+        perror("server: socket");
+        continue;
+        }
 
-    if ((s_tcp = socket(servinfo->ai_family, servinfo->ai_socktype, servinfo->ai_protocol)) < 0) {
-        perror("TCP Socket");
-        return 1;
+        if (setsockopt(s_tcp, SOL_SOCKET, SO_REUSEADDR, &yes,sizeof(int)) == -1) {
+        perror("setsockopt");
+        exit(1);
+        }
+
+        if (bind(s_tcp, p->ai_addr, p->ai_addrlen) == -1) {
+        close(s_tcp);
+        perror("server: bind");
+        continue;
+        }
+
+        break;
     }
 
-    if (bind(s_tcp, servinfo->ai_addr, servinfo->ai_addrlen) < 0) {
-        perror("bind");
+    freeaddrinfo(info);
+
+    if(p == NULL){
+        fprintf(stderr, "Server: failed to bind.\n");
         return 1;
     }
 
@@ -86,9 +107,12 @@ int main(int argc, char** argv) {
         return 1;
     }
 
+    //initialize fd-sets
     FD_ZERO(&all_fds);
     FD_ZERO(&copy_fds);
     FD_SET(s_tcp, &all_fds);
+
+    //set biggest filedesciptor known until now
     maxfd = s_tcp;
 
     printf("Waiting for TCP connections on s_tcp = %d...\n", s_tcp);
@@ -96,15 +120,15 @@ int main(int argc, char** argv) {
     while (1) {
         copy_fds = all_fds;
         printf("Select blocking\n");
-        selectRet = select(maxfd + 1, &copy_fds, NULL, NULL, NULL);
+        selectRetVal = select(maxfd + 1, &copy_fds, NULL, NULL, NULL);
         printf("Select free\n");
 
-        if (selectRet < 0) {
+        if (selectRetVal < 0) {
             perror("select");
             close(s_tcp);
             return 1;
-        } else if (selectRet == 0) {
-            printf("Nix neues...\n");
+        } else if (selectRetVal == 0) {
+            printf("Nothing...\n");
         }
 
         for (int i = 0; i <= maxfd; i++) {
@@ -117,19 +141,20 @@ int main(int argc, char** argv) {
                         close(s_tcp);
                         return 1;
                     }
-
-
+                    //add new fd to original set
                     FD_SET(news, &all_fds);
+                    //set new known maximum
                     if (maxfd < news) {
                         printf("maxfd<news\n");
                         maxfd = news;
                     }
                     printf("selectserver: new connection from %s on socket %d\n",
-                           inet_ntop(hints.ai_family, (struct sockaddr*)&sa_client, temp, INET6_ADDRSTRLEN), news);
+                           inet_ntop(sa_client.ss_family, get_in_addr((struct sockaddr*)&sa_client), temp, INET6_ADDRSTRLEN), news);
 
+                    //collect information on new client and store it
                     getnameinfo((struct sockaddr*)&sa_client, sizeof sa_client, host, sizeof host, service, sizeof service, 0);
                     struct clientinformation ci;
-                    //muss noch der Fall abgefangen werden, dass mehr als 5 Clients angemeldet sind oder ist dies durch das listen() erledigt?
+                    //TODO muss noch der Fall abgefangen werden, dass mehr als 5 Clients angemeldet sind oder ist dies durch das listen() erledigt?
                     ci.hostname = host;
                     ci.socket = news;
                     connected_clients[client_count] = ci;
@@ -151,7 +176,7 @@ int main(int argc, char** argv) {
             }
         }
     }
-    freeaddrinfo(servinfo);
+    freeaddrinfo(info);
     close(s_tcp);
     return 0;
 }
