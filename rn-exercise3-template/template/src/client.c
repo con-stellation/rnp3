@@ -31,7 +31,7 @@ void *get_in_addr(struct sockaddr *sa){
 
 int main(int argc, char** argv) {
     const char *restrict SRV_ADDRESS = argv[0];  // TODO: Remove cast and parse arguments.
-    const char *restrict SRV_PORT = argv[0];
+    const char *restrict SRV_PORT = argv[1];
     char buffer[INET6_ADDRSTRLEN];
     int s_tcp;
 
