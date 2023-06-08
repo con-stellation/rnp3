@@ -9,10 +9,9 @@
 #include <stdbool.h>
 #include <sys/sendfile.h>
 #include <fcntl.h>
+#include <netdb.h>
 
 // TODO: Remove this block.
-#define SRV_ADDRESS "127.0.0.1"
-#define SRV_PORT 7777
 #define LIST 0
 #define FILES 1
 #define GET 2
@@ -31,30 +30,51 @@ void *get_in_addr(struct sockaddr *sa){
 }
 
 int main(int argc, char** argv) {
-    (void)argc;  // TODO: Remove cast and parse arguments.
-    (void)argv;  // TODO: Remove cast and parse arguments.
+    const char *restrict SRV_ADDRESS = argv[0];  // TODO: Remove cast and parse arguments.
+    const char *restrict SRV_PORT = argv[0];
+    char buffer[INET6_ADDRSTRLEN];
     int s_tcp;
-    struct sockaddr_in sa;
-    unsigned int sa_len = sizeof(struct sockaddr_in);
-    // ssize_t n = 0;
 
-    sa.sin_family = AF_INET;
-    sa.sin_port = htons(SRV_PORT);
+    struct addrinfo hints, *servinfo, *p;
+    int rv;
 
-    if (inet_pton(sa.sin_family, SRV_ADDRESS, &sa.sin_addr.s_addr) <= 0) {
-        perror("Address Conversion");
+    memset(&hints, 0, sizeof hints);    //make sure struct is empty
+    hints.ai_family = AF_UNSPEC;        // dont care Ipv4 or IPv6
+    hints.ai_socktype = SOCK_STREAM;    //TCP stream socket
+    hints.ai_flags = 0;
+    hints.ai_protocol = IPPROTO_TCP;
+
+    if ((rv = getaddrinfo(SRV_ADDRESS, SRV_PORT, &hints, &servinfo)) != 0) {
+        fprintf(stderr, "getaddrinfo error: %s\n", gai_strerror(rv)); //TODO im Buch gucken
         return 1;
     }
 
-    if ((s_tcp = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0) {
-        perror("TCP Socket");
+    for(p = servinfo; p != NULL; p = p->ai_next) {
+        if ((s_tcp = socket(p->ai_family, p->ai_socktype,
+                             p->ai_protocol)) < 0) {
+            perror("socket");
+            continue;
+        }
+
+        if (connect(s_tcp, p->ai_addr, p->ai_addrlen) < 0) {
+            close(s_tcp);
+            perror("connect");
+            continue;
+        }
+        break;
+    }
+
+    if(p==NULL){
+        fprintf(stderr, "Client: failed to connect.\n");
         return 1;
     }
 
-    if (connect(s_tcp, (struct sockaddr*)&sa, sa_len) < 0) {
-        perror("Connect");
-        return 1;
-    }
+    inet_ntop(p->ai_family, get_in_addr((struct sockaddr *)p->ai_addr), buffer, sizeof buffer);
+    printf("client connection with: %s\n", buffer);
+
+    freeaddrinfo(servinfo);
+
+
 
     while(1) {
         if(read_request(s_tcp))
