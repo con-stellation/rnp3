@@ -22,6 +22,7 @@
 #define QUIT 4
 #define MAX_FILE_NAME 255
 #define MAX_HOST_NAME 255
+
 struct clientinformation{
     char *hostname;
     int socket;
@@ -29,22 +30,22 @@ struct clientinformation{
 void handle_request(int);
 void rearrangeArray(int);
 int client_count, maxfd;
-struct clientinformation * connected_clients;
+struct clientinformation connected_clients[5 * sizeof(struct clientinformation)];
 fd_set all_fds, copy_fds;
 
 void *get_in_addr(struct sockaddr *sa){
     if (sa->sa_family == AF_INET) {
         printf("IPv4\n");
         return &(((struct sockaddr_in*)sa)->sin_addr);
+    } else if(sa->sa_family == AF_INET6){
+        printf("IPv6\n");
+        return &(((struct sockaddr_in6*)sa)->sin6_addr);
     }
-    printf("IPv6\n");
-    return &(((struct sockaddr_in6*)sa)->sin6_addr);
+  return NULL;    
 }
 
-int main(int argc, char** argv) {
-    (void)argc;
-    (void)argv;
-    connected_clients = malloc(5 * sizeof(struct clientinformation));
+int main(void) {
+    
     int s_tcp, news, selectRetVal;
     char host[1024];
     char service[20];
@@ -57,7 +58,7 @@ int main(int argc, char** argv) {
     socklen_t  sa_len;
 
     memset(&hints, 0, sizeof hints);
-    hints.ai_family = AF_UNSPEC;
+    hints.ai_family = AF_INET6;
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_flags = AI_PASSIVE;
     hints.ai_protocol = IPPROTO_TCP;
@@ -232,13 +233,7 @@ void handle_list(int stream) {
     for (int i = 0; i < client_count; i++) {
         char s[2];
         sprintf(s, "%d", connected_clients[i].socket);
-
-        char buf1[strlen(connected_clients[i].hostname) + strlen(s) + 1];
-        sprintf(buf1, "%s : %d\n", connected_clients[i].hostname, connected_clients[i].socket);
-        printf("%s", buf1);
-        strcat(str, buf1);
-        memset(buf1, 0, strlen(buf1));
-
+        printf("%s : %d\n", connected_clients[i].hostname, connected_clients[i].socket);
     }
 
     printf("Clientinformationen versendet\n");
@@ -275,7 +270,7 @@ void handle_get(int stream) {
         break;
     }
     printf("error\n");
-    exit(1);
+    //exit(1);
   }
   int bytes;
   do {
@@ -297,12 +292,13 @@ void handle_put(int stream) {
   FILE * file = fopen(filename, "w");
   if(file == NULL) {
     printf("File could not be opened");
-    exit(1);
+    //exit(1);
+    return;
   }
   int bytes = 1;
   char buf[2] = {0};
-    int str_size = 0;
-    int str_capacity = 0;
+    //int str_size = 0;
+    //int str_capacity = 0;
 
     do {
         bytes = recv(stream, buf, 1, 0);

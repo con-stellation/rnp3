@@ -23,16 +23,23 @@ bool read_request(int);
 
 void *get_in_addr(struct sockaddr *sa){
     if (sa->sa_family == AF_INET) {
+        printf("IPv4\n"); 
         return &(((struct sockaddr_in*)sa)->sin_addr);
+        
+    } else if(sa->sa_family == AF_INET6){
+        printf("IPv6\n");
+        return &(((struct sockaddr_in6*)sa)->sin6_addr);
     }
-
-    return &(((struct sockaddr_in6*)sa)->sin6_addr);
+    return NULL;
 }
 
 int main(int argc, char** argv) {
-    const char *restrict SRV_ADDRESS = argv[0];  // TODO: Remove cast and parse arguments.
-    const char *restrict SRV_PORT = argv[1];
-    char buffer[INET6_ADDRSTRLEN];
+(void)argc;
+    const char *restrict SRV_ADDRESS = argv[1];  // TODO: Remove cast and parse arguments.
+    const char *restrict SRV_PORT = argv[2];
+    printf("%s\n", SRV_ADDRESS);
+    printf("%s\n", SRV_PORT);
+    char buffer1[INET6_ADDRSTRLEN];
     int s_tcp;
 
     struct addrinfo hints, *servinfo, *p;
@@ -42,13 +49,12 @@ int main(int argc, char** argv) {
     hints.ai_family = AF_UNSPEC;        // dont care Ipv4 or IPv6
     hints.ai_socktype = SOCK_STREAM;    //TCP stream socket
     hints.ai_flags = 0;
-    hints.ai_protocol = IPPROTO_TCP;
+    hints.ai_protocol = 0;
 
     if ((rv = getaddrinfo(SRV_ADDRESS, SRV_PORT, &hints, &servinfo)) != 0) {
         fprintf(stderr, "getaddrinfo error: %s\n", gai_strerror(rv)); //TODO im Buch gucken
         return 1;
     }
-
     for(p = servinfo; p != NULL; p = p->ai_next) {
         if ((s_tcp = socket(p->ai_family, p->ai_socktype,
                              p->ai_protocol)) < 0) {
@@ -64,17 +70,18 @@ int main(int argc, char** argv) {
         break;
     }
 
+    
+
     if(p==NULL){
         fprintf(stderr, "Client: failed to connect.\n");
         return 1;
     }
 
-    inet_ntop(p->ai_family, get_in_addr((struct sockaddr *)p->ai_addr), buffer, sizeof buffer);
-    printf("client connection with: %s\n", buffer);
+    inet_ntop(p->ai_family, get_in_addr((struct sockaddr *)p->ai_addr), buffer1, sizeof buffer1);
+    printf("client connection with: %s\n", buffer1);
 
     freeaddrinfo(servinfo);
-
-
+    
 
     while(1) {
         if(read_request(s_tcp))
@@ -232,7 +239,11 @@ bool read_request(int stream) {
                 source[newLen++] = EOF; /* Just to be safe. */
             }
         }
-        printf("Source: %s\n\n", source);
+        if(source != NULL){
+            printf("Source: %s\n\n", source);
+
+        }
+
         char filelines[1] = {0};
         int index = 0;
         while(1){
