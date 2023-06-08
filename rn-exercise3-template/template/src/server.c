@@ -332,7 +332,7 @@ void handle_put(int stream) {
     } while(bytes > 0);
 
     memset(filename, 0, sizeof filename);
-    if(bytes == -1) {
+    if(bytes <= -1) {
         switch(errno) {
         case EAGAIN:
             printf("Nonblocking\n");

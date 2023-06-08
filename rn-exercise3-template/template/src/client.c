@@ -176,6 +176,10 @@ bool read_request(int stream) {
     if(command == GET) {
         char buffer[2] = {0};
         int bytes = 1;
+        FILE* f = fopen(filename, "w");
+        if(f==NULL){
+            printf ("error in client: %d", __LINE__);
+        }
         //printf("bytes received: %d\n", bytes);
         do {
             bytes = recv(stream, buffer, 1, 0);
@@ -183,8 +187,10 @@ bool read_request(int stream) {
             if(buffer[0] == EOF){
                 break;
             }
+            fprintf(f, "%c", stream);
             printf("%s", buffer);
         } while(bytes > 0);
+        fclose(f);
     }
     if(command == LIST){
         char buf[2] = {0};
@@ -213,7 +219,7 @@ bool read_request(int stream) {
         if(file == NULL){
             perror("Fileopen\n");
             printf("Error Filename: %s\n", filename);
-            return -1;
+            return false;
         }
         printf("Filename: %s\n", filename);
         if (fseek(file, 0L, SEEK_END) == 0) {
@@ -259,13 +265,12 @@ bool read_request(int stream) {
             index++;
 
         };
-        filelines[0] = EOF;
-        send(stream, filelines, 1, 0);
+
        // char eof[1] = {EOF};
        // send(stream, eof, sizeof eof, 0);
         fclose(file);
         free(source); /* Don't forget to call free() later! */
-        
+
         char byte;
         do {
             recv(stream, &byte, 1, 0);
