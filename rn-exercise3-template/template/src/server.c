@@ -276,7 +276,6 @@ void handle_put(int stream) {
   }
   int bytes = 1;
   char buf[2] = {0};
-  char* str = NULL;
     int str_size = 0;
     int str_capacity = 0;
 
@@ -286,24 +285,12 @@ void handle_put(int stream) {
             printf("error\n");
             exit(1);
         }
-        printf("%d\n", (int) buf[0]);
+        printf("buf %c\n", buf[0]);
         if(buf[0] == EOF){
+            printf("End of file bekommen. \n");
             break;
         }
         //printf("%c", buf[0]);
-        if (str_size >= str_capacity - 1) {
-            // Den Speicher für str erweitern
-            str_capacity += 1;
-            char* new_str = realloc(str, str_capacity);
-            if (new_str == NULL) {
-                printf("Fehler: Speicher konnte nicht erweitert werden");
-                exit(1);
-            }
-            str = new_str;
-            printf("Neuer Zuwachs: %s\n", str);
-            strcat(str, &buf[0]);
-        }
-        //strcat(str, &buf[0]);
 
         if(fprintf(file,"%c", buf[0]) == -1) {
             printf("error\n");
@@ -311,10 +298,8 @@ void handle_put(int stream) {
         }
         memset(buf, 0, 2);
     } while(bytes > 0);
-    printf("Content: %s", str);
-    fprintf(file,"%s", str);
-    free(str);
 
+    memset(filename, 0, sizeof filename);
     if(bytes == -1) {
         switch(errno) {
         case EAGAIN:
@@ -356,7 +341,7 @@ void handle_put(int stream) {
     send(stream, line, strlen(line), 0);
     char* ip = "0.0.0.0\n";
     send(stream, ip, strlen(ip), 0);
-    char* time = "1.1.1970:00:00";
+    char* time = "1.1.1970:00:00\n";
     send(stream, time, strlen(time), 0);
     char n = '\0';
     send(stream, &n, 1, 0);

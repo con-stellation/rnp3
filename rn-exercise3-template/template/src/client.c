@@ -233,9 +233,10 @@ bool read_request(int stream) {
        // char eof[1] = {EOF};
        // send(stream, eof, sizeof eof, 0);
         fclose(file);
+        free(source); /* Don't forget to call free() later! */
     }
 
-    free(source); /* Don't forget to call free() later! */
+
 
     //printf("closed file: %d\n", cls);
 
