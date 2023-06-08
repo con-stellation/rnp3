@@ -48,4 +48,10 @@ src/CMakeFiles/server.dir/server.c.o: \
  /usr/lib/gcc/x86_64-redhat-linux/12/include/stdbool.h \
  /usr/include/sys/sendfile.h /usr/include/fcntl.h \
  /usr/include/bits/fcntl.h /usr/include/bits/fcntl-linux.h \
- /usr/include/bits/stat.h /usr/include/bits/struct_stat.h
+ /usr/include/bits/stat.h /usr/include/bits/struct_stat.h \
+ /usr/include/malloc.h /usr/include/errno.h /usr/include/bits/errno.h \
+ /usr/include/linux/errno.h /usr/include/asm/errno.h \
+ /usr/include/asm-generic/errno.h /usr/include/asm-generic/errno-base.h \
+ /usr/include/stdlib.h /usr/include/bits/waitflags.h \
+ /usr/include/bits/waitstatus.h /usr/include/alloca.h \
+ /usr/include/bits/stdlib-bsearch.h /usr/include/bits/stdlib-float.h

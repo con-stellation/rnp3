@@ -85,8 +85,54 @@ src/CMakeFiles/server.dir/server.c.o: /home/berivan/Dokumente/RNP3/rnp3/rn-exerc
   /usr/include/strings.h \
   /usr/include/netdb.h \
   /usr/include/rpc/netdb.h \
-  /usr/include/bits/netdb.h
+  /usr/include/bits/netdb.h \
+  /usr/lib/gcc/x86_64-redhat-linux/12/include/stdbool.h \
+  /usr/include/sys/sendfile.h \
+  /usr/include/fcntl.h \
+  /usr/include/bits/fcntl.h \
+  /usr/include/bits/fcntl-linux.h \
+  /usr/include/bits/stat.h \
+  /usr/include/bits/struct_stat.h \
+  /usr/include/malloc.h \
+  /usr/include/errno.h \
+  /usr/include/bits/errno.h \
+  /usr/include/linux/errno.h \
+  /usr/include/asm/errno.h \
+  /usr/include/asm-generic/errno.h \
+  /usr/include/asm-generic/errno-base.h \
+  /usr/include/stdlib.h \
+  /usr/include/bits/waitflags.h \
+  /usr/include/bits/waitstatus.h \
+  /usr/include/alloca.h \
+  /usr/include/bits/stdlib-bsearch.h \
+  /usr/include/bits/stdlib-float.h
 
+
+/usr/include/alloca.h:
+
+/usr/include/bits/waitstatus.h:
+
+/usr/include/bits/waitflags.h:
+
+/usr/include/asm-generic/errno-base.h:
+
+/usr/include/asm/errno.h:
+
+/usr/include/linux/errno.h:
+
+/usr/include/malloc.h:
+
+/usr/include/bits/struct_stat.h:
+
+/usr/include/bits/fcntl-linux.h:
+
+/usr/include/bits/fcntl.h:
+
+/usr/include/fcntl.h:
+
+/usr/include/sys/sendfile.h:
+
+/usr/lib/gcc/x86_64-redhat-linux/12/include/stdbool.h:
 
 /usr/include/bits/netdb.h:
 
@@ -99,6 +145,8 @@ src/CMakeFiles/server.dir/server.c.o: /home/berivan/Dokumente/RNP3/rnp3/rn-exerc
 /usr/include/bits/types/sigset_t.h:
 
 /usr/include/asm/sockios.h:
+
+/usr/include/bits/stdlib-bsearch.h:
 
 /usr/include/asm/posix_types_64.h:
 
@@ -123,6 +171,8 @@ src/CMakeFiles/server.dir/server.c.o: /home/berivan/Dokumente/RNP3/rnp3/rn-exerc
 /usr/include/bits/select.h:
 
 /usr/include/gnu/stubs-64.h:
+
+/usr/include/bits/stat.h:
 
 /usr/include/bits/struct_mutex.h:
 
@@ -192,6 +242,8 @@ src/CMakeFiles/server.dir/server.c.o: /home/berivan/Dokumente/RNP3/rnp3/rn-exerc
 
 /usr/include/linux/stddef.h:
 
+/usr/include/errno.h:
+
 /usr/include/bits/pthreadtypes.h:
 
 /usr/include/linux/posix_types.h:
@@ -212,9 +264,13 @@ src/CMakeFiles/server.dir/server.c.o: /home/berivan/Dokumente/RNP3/rnp3/rn-exerc
 
 /usr/include/stdio.h:
 
+/usr/include/stdlib.h:
+
 /usr/include/bits/typesizes.h:
 
 /usr/include/asm-generic/sockios.h:
+
+/usr/include/asm-generic/errno.h:
 
 /usr/include/bits/types/struct_osockaddr.h:
 
@@ -228,9 +284,13 @@ src/CMakeFiles/server.dir/server.c.o: /home/berivan/Dokumente/RNP3/rnp3/rn-exerc
 
 /usr/include/bits/in.h:
 
+/usr/include/bits/errno.h:
+
 /usr/include/bits/types/__fpos_t.h:
 
 /usr/include/bits/types/__FILE.h:
+
+/usr/include/bits/stdlib-float.h:
 
 /usr/include/bits/endianness.h:
 
