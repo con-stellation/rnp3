@@ -237,10 +237,10 @@ void handle_list(int stream) {
     sprintf(temp, "Clientcount: %d\n%c", client_count, end_of_file);
     printf("Clientcount: %d\n", client_count);
     char str[6 * sizeof(struct clientinformation)] = {0};
-    char s[6] = {0};
+    char s[sizeof(struct clientinformation)] = {0};
 
     for (int i = 0; i < client_count; i++) {
-        sprintf(s, "%s : %d\n", connected_clients[i].hostname, connected_clients[i].socket);
+        int b = sprintf(s, "%s : %d\n", connected_clients[i].hostname, connected_clients[i].socket);
         strcat(str, s);
         printf("%s\n", str);
         memset(s, 0, sizeof s);
