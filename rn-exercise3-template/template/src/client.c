@@ -34,7 +34,7 @@ void *get_in_addr(struct sockaddr *sa){
 }
 
 int main(int argc, char** argv) {
-(void)argc;
+    (void)argc;
     const char *restrict SRV_ADDRESS = argv[1];  // TODO: Remove cast and parse arguments.
     const char *restrict SRV_PORT = argv[2];
     printf("%s\n", SRV_ADDRESS);
@@ -111,7 +111,7 @@ void handle_error(char* return_value) {
 }
 
 int read_command() {
-    printf("Enter Command:\n");
+    printf("\nEnter Command:\n");
     printf("0) List\n");
     printf("1) Files\n");
     printf("2) Get\n");

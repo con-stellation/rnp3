@@ -29,6 +29,7 @@ struct clientinformation{
 };
 void handle_request(int);
 void rearrangeArray(int);
+void handle_quit(int);
 int client_count, maxfd;
 struct clientinformation connected_clients[5 * sizeof(struct clientinformation)];
 fd_set all_fds, copy_fds;
@@ -146,7 +147,6 @@ int main(void) {
                     FD_SET(news, &all_fds);
                     //set new known maximum
                     if (maxfd < news) {
-                        printf("maxfd<news\n");
                         maxfd = news;
                     }
                     printf("selectserver: new connection from %s on socket %d\n",
@@ -186,13 +186,21 @@ int read_command(int stream) {
 
   printf("reading command\n");
   char buffer[7] = {0};
+
   for(int i = 0; i < 6; i++) {
-    recv(stream, &(buffer[i]), 1, 0);
-    printf("command: %s\n", buffer);
-    if(buffer[i] == ' ' || buffer[i] == '\n')
-      break;
+    ssize_t bytes = recv(stream, &(buffer[i]), 1, 0);
+    if(bytes <= 0){
+        handle_quit(stream);
+        printf("Disconnected\n");
+        break;
+    } else {
+        printf("command: %s\n", buffer);
+        if(buffer[i] == ' ' || buffer[i] == '\n')
+        break;
+    }
+
   }
-  int command = 0;
+  int command = -1;
   if(strcmp("List ", buffer) == 0) {
     command = 0;
   }else if(strcmp("Files ", buffer) == 0) {
@@ -224,22 +232,25 @@ void read_filename(char *buffer, int buffer_size, int stream) {
 
 void handle_list(int stream) {
     printf("list\n");
-    char temp[17];
+    char temp[17] = {0};
     char end_of_file = EOF;
     sprintf(temp, "Clientcount: %d\n%c", client_count, end_of_file);
     printf("Clientcount: %d\n", client_count);
     char str[6 * sizeof(struct clientinformation)] = {0};
+    char s[6] = {0};
 
     for (int i = 0; i < client_count; i++) {
-        char s[2];
-        sprintf(s, "%d", connected_clients[i].socket);
-        printf("%s : %d\n", connected_clients[i].hostname, connected_clients[i].socket);
+        sprintf(s, "%s : %d\n", connected_clients[i].hostname, connected_clients[i].socket);
+        strcat(str, s);
+        printf("%s\n", str);
+        memset(s, 0, sizeof s);
     }
 
     printf("Clientinformationen versendet\n");
     strcat(str, temp);
     send(stream, str, strlen(str), 0);
-    memset(str, 0, strlen(str));
+    memset(str, 0, sizeof str);
+    memset(temp, 0, sizeof temp);
 }
 
 
