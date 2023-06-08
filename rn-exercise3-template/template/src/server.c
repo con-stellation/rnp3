@@ -182,6 +182,15 @@ int main(void) {
     return 0;
 }
 
+int get_time(char *buffer, int size) {
+  time_t t;
+  struct tm *info;
+  time(&t);
+  info = localtime(&t);
+  strftime(buffer, size, "%Y-%m-%d %H:%M:%S", info);
+  printf("%s\n", buffer);
+}
+
 int read_command(int stream) {
 
   printf("reading command\n");
@@ -362,7 +371,8 @@ void handle_put(int stream) {
     send(stream, line, strlen(line), 0);
     char* ip = "0.0.0.0\n";
     send(stream, ip, strlen(ip), 0);
-    char* time = "1.1.1970:00:00\n";
+    char time[20] = {0};
+    int get_time(time, 20)
     send(stream, time, strlen(time), 0);
     char n = '\0';
     send(stream, &n, 1, 0);
