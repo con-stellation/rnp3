@@ -34,7 +34,8 @@ void *get_in_addr(struct sockaddr *sa){
 }
 
 int main(int argc, char** argv) {
-(void)argc;
+    printf("starting\n");
+    (void)argc;
     const char *restrict SRV_ADDRESS = argv[1];  // TODO: Remove cast and parse arguments.
     const char *restrict SRV_PORT = argv[2];
     printf("%s\n", SRV_ADDRESS);
@@ -81,8 +82,8 @@ int main(int argc, char** argv) {
     printf("client connection with: %s\n", buffer1);
 
     freeaddrinfo(servinfo);
-    
 
+    printf("into superloop\n");
     while(1) {
         if(read_request(s_tcp))
             break;
@@ -111,7 +112,7 @@ void handle_error(char* return_value) {
 }
 
 int read_command() {
-    printf("Enter Command:\n");
+    printf("\nEnter Command:\n");
     printf("0) List\n");
     printf("1) Files\n");
     printf("2) Get\n");
@@ -127,41 +128,8 @@ int read_command() {
     return (int) command[0] - (int) '0';
 }
 
-int read_and_send_command(int stream) {
-    int c = read_command();
-    char* command = NULL;
-    printf("c= %d\n", c);
-    int size;
-    switch(c) {
-        case LIST:
-            command = "List ";
-            size = 5;
-            break;
-        case FILES:
-            command = "Files ";
-            size = 6;
-            break;
-        case GET:
-            command = "Get ";
-            size = 4;
-            break;
-        case PUT:
-            command = "Put ";
-            size = 4;
-            break;
-        case QUIT:
-        default:
-            command = "Quit ";
-            size = 5;
-            break;
-    }
-    printf("Command: %s Size: %d\n", command, size);
-    send(stream, command, size, 0);
-    return c;
-}
-
 bool read_request(int stream) {
-    int command = read_and_send_command(stream);
+    int command = read_command();
     char filename[MAX_FILE_NAME] = {0};
 
     if(command == GET || command == PUT) {
@@ -171,11 +139,19 @@ bool read_request(int stream) {
         //     fgets(unused, sizeof(unused), stdin));
         handle_error(
             fgets(filename, sizeof(filename), stdin));
-        send(stream, filename, strlen(filename), 0);
+
     }
     if(command == GET) {
         char buffer[2] = {0};
         int bytes = 1;
+        FILE* f = fopen(filename, "w");
+        if(f==NULL){
+            printf ("error in client: %d", __LINE__);
+            return false;
+        }
+        //printf("Command: %s Size: %d\n", command, 4);
+        send(stream, "Put ", 4, 0);
+        send(stream, filename, strlen(filename), 0);
         //printf("bytes received: %d\n", bytes);
         do {
             bytes = recv(stream, buffer, 1, 0);
@@ -183,8 +159,10 @@ bool read_request(int stream) {
             if(buffer[0] == EOF){
                 break;
             }
+            fprintf(f, "%c", stream);
             printf("%s", buffer);
         } while(bytes > 0);
+        fclose(f);
     }
     if(command == LIST){
         char buf[2] = {0};
@@ -212,9 +190,10 @@ bool read_request(int stream) {
         FILE* file = fopen(filename, "r");
         if(file == NULL){
             perror("Fileopen\n");
-            printf("Error Filename: %s\n", filename);
-            return -1;
+            printf("error in client: %d", __LINE__);
+            return false;
         }
+        send(stream, filename, strlen(filename), 0);
         printf("Filename: %s\n", filename);
         if (fseek(file, 0L, SEEK_END) == 0) {
             /* Get the size of the file. */
@@ -259,13 +238,12 @@ bool read_request(int stream) {
             index++;
 
         };
-        filelines[0] = EOF;
-        send(stream, filelines, 1, 0);
+
        // char eof[1] = {EOF};
        // send(stream, eof, sizeof eof, 0);
         fclose(file);
         free(source); /* Don't forget to call free() later! */
-        
+
         char byte;
         do {
             recv(stream, &byte, 1, 0);
