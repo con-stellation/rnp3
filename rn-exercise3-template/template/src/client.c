@@ -12,7 +12,6 @@
 #include <netdb.h>
 #include <errno.h>
 
-// TODO: Remove this block.
 #define LIST 0
 #define FILES 1
 #define GET 2
@@ -37,7 +36,7 @@ void *get_in_addr(struct sockaddr *sa){
 int main(int argc, char** argv) {
     printf("starting\n");
     (void)argc;
-    const char *restrict SRV_ADDRESS = argv[1];  // TODO: Remove cast and parse arguments.
+    const char *restrict SRV_ADDRESS = argv[1];  
     const char *restrict SRV_PORT = argv[2];
     printf("%s\n", SRV_ADDRESS);
     printf("%s\n", SRV_PORT);
@@ -72,8 +71,6 @@ int main(int argc, char** argv) {
         break;
     }
 
-    
-
     if(p==NULL){
         fprintf(stderr, "Client: failed to connect.\n");
         return 1;
@@ -84,32 +81,12 @@ int main(int argc, char** argv) {
 
     freeaddrinfo(servinfo);
 
-    //printf("into superloop\n");
     while(1) {
         if(read_request(s_tcp))
             break;
-        // char buffer[256];
-        // printf("enter msg\n");
-        // fgets(buffer, sizeof(buffer), stdin);
-        // if(buffer[0] == '\\' && buffer[1] == '0') {
-        //   buffer[0] = (char) 0;
-        //   send(s_tcp, buffer, 1, 0);
-        //   break;
-        // }
-
-        // if ((n = send(s_tcp, buffer, strlen(buffer), 0)) > 0) {
-        //   printf("Message %s sent (%zi Bytes).\n", buffer, n);
-        // }
     }
 
     close(s_tcp);
-}
-
-void handle_error(char* return_value) {
-    if(return_value == NULL) {
-        printf("Error\n");
-        exit(1);
-    }
 }
 
 int read_command() {
@@ -130,7 +107,6 @@ int read_command() {
         printf("cant read command\n");
         exit(1);
     }
-    //printf("Command: %c\n", command[0]);
     return (int) command[0] - (int) '0';
 }
 
@@ -147,9 +123,7 @@ bool handle_get(int stream) {
     if(f==NULL){
         printf("Get in Client: error fopen\n");
         return false;
-        //exit(1);
     }
-
     if(send(stream, "Get ", 4, 0) == -1) {
         printf("cant send command\n");
         exit(1);
@@ -163,6 +137,7 @@ bool handle_get(int stream) {
         printf("cant send filename nullchar\n");
         exit(1);
     }
+    //read content
     do {
         bytes = recv(stream, buffer, 1, 0);
         if(buffer[0] == EOF)
@@ -184,16 +159,18 @@ bool handle_put(int stream) {
     char* source = NULL;
     char filename[MAX_FILE_NAME] = {0};
     printf("enter filename: \n");
-    handle_error(fgets(filename, sizeof(filename), stdin));
+    if(fgets(filename, sizeof(filename), stdin) == NULL) {
+        printf("Cant read file\n");
+        exit(1);
+    }
 
+    //turn \n into \0
     for(unsigned long i = 0; i < strlen(filename); i++){
         if(filename[i] == '\n') {
             filename[i] = '\0';
             break;
         }
     }
-    //for(unsigned long int i = 0; i <  strlen(filename); i++)
-        //printf("??? %c\n", filename[i]);
 
     FILE* file = fopen(filename, "r");
     if(file == NULL){
@@ -232,7 +209,10 @@ bool handle_put(int stream) {
         source = malloc(sizeof(char) * (bufsize + 1));
 
         /* Go back to the start of the file. */
-        if (fseek(file, 0L, SEEK_SET) != 0) { /* Error */ }
+        if (fseek(file, 0L, SEEK_SET) != 0) { 
+            printf("error\n");
+            return false;
+        }
 
         /* Read the entire file into memory. */
         size_t newLen = fread(source, sizeof(char), bufsize, file);
@@ -242,10 +222,10 @@ bool handle_put(int stream) {
             source[newLen++] = EOF; /* Just to be safe. */
         }
     }
+    //send content
     if(source != NULL){
         printf("Source: %s\n\n", source);
     }
-
     char filelines[1] = {0};
     int index = 0;
     while(1){
@@ -262,7 +242,7 @@ bool handle_put(int stream) {
 
     };
     fclose(file);
-    free(source); /* Don't forget to call free() later! */
+    free(source); 
     printf("\n");
     char byte;
     do {
@@ -317,6 +297,7 @@ bool handle_files(int stream) {
     return false;
 }
 
+//handle the request and return if the client has quit
 bool read_request(int stream) {
     int command = read_command();
     switch(command) {
