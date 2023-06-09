@@ -265,16 +265,47 @@ bool handle_put(int stream) {
 }
 
 bool handle_list(int stream) {
+    char *command = "List ";
+    if(send(stream, command, strlen(command), 0) == -1) {
+        printf("cant send command\n");
+        exit(1);
+    }
     char buf[2] = {0};
     int bytes = 1;
     do{
         bytes = recv(stream, buf, 1, 0);
-        if(buf[0] == EOF){
-            break;
+        if(bytes == -1) {
+            printf("error while receiving\n");
+            exit(1);
         }
+        if(buf[0] == EOF)
+            break;
         printf("%c", buf[0]);
         memset(buf, 0, 2);
     } while(bytes > 0);
+    return false;
+}
+
+bool handle_files(int stream) {
+    char *command = "Files ";
+    if(send(stream, command, strlen(command), 0) == -1) {
+        printf("cant send command\n");
+        exit(1);
+    }
+    char buf[2] = {0};
+    int bytes = 1;
+    do{
+        bytes = recv(stream, buf, 1, 0);
+        if(bytes == -1) {
+            printf("error while receiving\n");
+            exit(1);
+        }
+        if(buf[0] == EOF)
+            break;
+        printf("%c", buf[0]);
+        memset(buf, 0, 2);
+    } while(bytes > 0);
+    return false;
 }
 
 bool read_request(int stream) {
@@ -286,6 +317,8 @@ bool read_request(int stream) {
             return handle_list(stream);
         case PUT: 
             return handle_put(stream);
+        case FILES:
+            return handle_files(stream);
         case QUIT:
             return true;
         default:
