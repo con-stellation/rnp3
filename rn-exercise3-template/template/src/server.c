@@ -23,7 +23,6 @@
 #define PUT 3
 #define QUIT 4
 #define MAX_FILE_NAME 255
-#define MAX_HOST_NAME 255
 #define MAX_PATH_LENGTH 4096
 
 struct clientinformation{
@@ -40,10 +39,8 @@ fd_set all_fds, copy_fds;
 
 void *get_in_addr(struct sockaddr *sa){
     if (sa->sa_family == AF_INET) {
-        printf("IPv4\n");
         return &(((struct sockaddr_in*)sa)->sin_addr);
     } else if(sa->sa_family == AF_INET6){
-        printf("IPv6\n");
         return &(((struct sockaddr_in6*)sa)->sin6_addr);
     }
   return NULL;    
@@ -54,7 +51,6 @@ int main(void) {
     int s_tcp, news, selectRetVal;
     char host[NI_MAXHOST];
     char service[NI_MAXHOST];
-
 
     //IP-neutralität gewähren
     int status, yes = 1;
@@ -78,7 +74,7 @@ int main(void) {
 
     char temp[INET6_ADDRSTRLEN];
 
-// loop through all the results and bind to the first we can
+    // loop through all the results and bind to the first we can
     for(p = info; p != NULL; p = p->ai_next) {
         if ((s_tcp = socket(p->ai_family, p->ai_socktype,
         p->ai_protocol)) == -1) {
@@ -123,12 +119,13 @@ int main(void) {
 
     printf("Waiting for TCP connections on s_tcp = %d...\n", s_tcp);
 
+    //superloop
     while (1) {
+        //get next event
         copy_fds = all_fds;
-        printf("Select blocking\n");
         selectRetVal = select(maxfd + 1, &copy_fds, NULL, NULL, NULL);
-        printf("Select free\n");
 
+        //error handling
         if (selectRetVal < 0) {
             perror("select");
             close(s_tcp);
@@ -137,9 +134,10 @@ int main(void) {
             printf("Nothing...\n");
         }
 
+        //see which fd is ready
         for (int i = 0; i <= maxfd; i++) {
             if (FD_ISSET(i, &copy_fds)) {
-                printf("FD_ISSET i=%d\n", i);
+                //new connection
                 if (i == s_tcp) {
                     sa_len = sizeof sa_client;
                     if ((news = accept(s_tcp, (struct sockaddr*)&sa_client, &sa_len)) < 0) {
@@ -159,7 +157,6 @@ int main(void) {
                     //collect information on new client and store it
                     getnameinfo((struct sockaddr*)&sa_client, sizeof sa_client, host, sizeof host, service, sizeof service, 0);
                     struct clientinformation ci;
-                    //TODO muss noch der Fall abgefangen werden, dass mehr als 5 Clients angemeldet sind oder ist dies durch das listen() erledigt?
                     for(int i=0; i<NI_MAXHOST; i++){
                       ci.hostname[i] = host[i];
                     }
@@ -171,19 +168,9 @@ int main(void) {
                     
                     connected_clients[client_count] = ci;
                     client_count++;
-                    printf("New socket = %d (comp. %d), host = %s\n", ci.socket, news, ci.hostname);
-
+                    printf("New socket = %d, host = %s, port = %s\n", ci.socket, ci.hostname, ci.port);
                 } else {
-                    printf("<else-block> i=%d\n", i);
                     handle_request(i, sa_client, sa_len);
-
-                    /*if (recv(i, info, sizeof(info), 0)) {
-                        printf("Message received: %s\n", info);
-                        memset(info, 0, sizeof(info));
-
-                    }*/
-
-                    printf("Nach receive\n");
                 }
             }
         }
@@ -199,11 +186,9 @@ void get_time(char *buffer, int size) {
   time(&t);
   info = localtime(&t);
   strftime(buffer, size, "%Y-%m-%d %H:%M:%S", info);
-  printf("%s\n", buffer);
 }
 
 int read_command(int stream) {
-
   printf("reading command\n");
   char buffer[7] = {0};
 
@@ -214,7 +199,6 @@ int read_command(int stream) {
         printf("Disconnected\n");
         break;
     } else {
-        printf("command: %s\n", buffer);
         if(buffer[i] == ' ' || buffer[i] == '\n')
         break;
     }
@@ -222,15 +206,15 @@ int read_command(int stream) {
   }
   int command = -1;
   if(strcmp("List ", buffer) == 0) {
-    command = 0;
+    command = LIST;
   }else if(strcmp("Files ", buffer) == 0) {
-    command = 1;
+    command = FILES;
   }else if(strcmp("Get ", buffer) == 0) {
-    command = 2;
+    command = GET;
   }else if(strcmp("Put ", buffer) == 0) {
-    command = 3;
+    command = PUT;
   }else if(strcmp("Quit ", buffer) == 0) {
-    command = 4;
+    command = QUIT;
   }
   return command;
 }
@@ -240,7 +224,6 @@ void read_filename(char *buffer, int buffer_size, int stream) {
   bool done = false;
   while(size < buffer_size && !done) {
     recv(stream, buffer + size, 1,  0);
-    printf("dbg: %d\n", (int) buffer[size]);
     if(buffer[size] == '\0' || buffer[size] == '\n') {
       buffer[size] = '\0';
       done = true;
@@ -250,32 +233,25 @@ void read_filename(char *buffer, int buffer_size, int stream) {
 }
 
 void handle_list(int stream) {
-  printf("%d\n", stream);
-    // printf("list\n");
-    // char temp[100] = {0};
-    // char end_of_file = EOF;
-    // sprintf(temp, "Clientcount: %d\n%c", client_count, end_of_file);
-    // printf("Clientcount: %d\n", client_count);
-    // char str[7 * (sizeof(struct clientinformation))] = {0};
+    char temp[100] = {0};
+    char end_of_file = EOF;
+    sprintf(temp, "Clientcount: %d\n%c", client_count, end_of_file);
+    char s[3*NI_MAXHOST] = {0};
+    char str[7 * (sizeof(struct clientinformation))] = {0};
 
-    // for (int i = 0; i < client_count; i++) {
-    //     char s[5+(sizeof(connected_clients[i].hostname)+sizeof(connected_clients[i].port))];
-    //     sprintf(s, "%s : %s\n", connected_clients[i].hostname, connected_clients[i].port);
-    //     strcat(str, s);
-    //     printf("%s\n", str);
-        
-    // }
+    for (int i = 0; i < client_count; i++) {
+      sprintf(s, "%s : %s\n", connected_clients[i].hostname, connected_clients[i].socket);
+      strcat(str, s);   
+    }
 
-    // printf("Clientinformationen versendet\n");
-    // strcat(str, temp);
-    // send(stream, str, strlen(str), 0);
-    // memset(str, 0, sizeof str);
-    // memset(temp, 0, sizeof temp);
+    strcat(str, temp);
+    send(stream, str, strlen(str), 0);
+    memset(str, 0, sizeof str);
+    memset(temp, 0, sizeof temp);
 }
 
 
 void handle_files(int stream) {
-  printf("files\n");
   char *path = "./";
   DIR *dir = opendir(path);
   if(dir == NULL) {
@@ -284,18 +260,21 @@ void handle_files(int stream) {
     printf("cant open path");
     return;
   }
+
   int buffer_size = 1024; //should be enough memory
   char buffer[buffer_size]; 
   memset(buffer, 0, buffer_size);
   struct dirent* entry;
   struct stat attributes;
   int amount_of_files = 0;
+
+  //iterate though the directory
   while ((entry = readdir(dir)) != NULL) {
     char entryPath[MAX_PATH_LENGTH];
     sprintf(entryPath, "%s/%s", path, entry->d_name);
     stat(entryPath, &attributes);
 
-    if (S_ISREG(attributes.st_mode)) {
+    if (S_ISREG(attributes.st_mode) /*is file*/) {
       char *name = entry->d_name;
       char *time = ctime(&attributes.st_mtime);
       long long size = (long long) attributes.st_size;
@@ -313,7 +292,6 @@ void handle_files(int stream) {
 }
 
 void handle_get(int stream) {
-  printf("get\n");
   char filename[MAX_FILE_NAME] = {0};
   read_filename(filename, MAX_FILE_NAME, stream);
   printf("filename: %s\n", filename);
@@ -334,13 +312,11 @@ void handle_get(int stream) {
         break;
     }
     printf("error\n");
-    //exit(1);
     return;
   }
   int bytes;
   do {
     bytes = sendfile(stream, file, NULL, 1);
-    //printf("%d bytes send\n", bytes);
   } while(bytes > 0);
   if(bytes<0){
       printf("Server: Error sending file. Line: %d", __LINE__);
@@ -348,26 +324,24 @@ void handle_get(int stream) {
   }
 
   int cls = close(file);
-  printf("closed file: %d\n", cls);
+  printf("closed file: %d\n", cls); //log if file was closed
   char n = '\0';
   send(stream, &n, 1, 0);
 }
 
 void handle_put(int stream, struct sockaddr_storage socket, socklen_t socket_length) {
-  printf("put\n");
-  char filename[MAX_FILE_NAME] = {0};
-  read_filename(filename, MAX_FILE_NAME, stream);
-  printf("%s\n", filename);
-  FILE * file = fopen(filename, "w");
-  if(file == NULL) {
-    printf("File could not be opened");
-    return;
-  }
-  int bytes = 1;
-  char buf[2] = {0};
-    //int str_size = 0;
-    //int str_capacity = 0;
+    char filename[MAX_FILE_NAME] = {0};
+    read_filename(filename, MAX_FILE_NAME, stream);
+    printf("%s\n", filename);
+    FILE * file = fopen(filename, "w");
+    if(file == NULL) {
+      printf("File could not be opened");
+      return;
+    }
 
+    //read file content
+    int bytes = 1;
+    char buf[2] = {0};
     do {
         bytes = recv(stream, buf, 1, 0);
         if(bytes == -1) {
@@ -379,8 +353,6 @@ void handle_put(int stream, struct sockaddr_storage socket, socklen_t socket_len
             printf("End of file bekommen. \n");
             break;
         }
-        //printf("%c", buf[0]);
-
         if(fprintf(file,"%c", buf[0]) == -1) {
             printf("error\n");
             exit(1);
@@ -419,9 +391,10 @@ void handle_put(int stream, struct sockaddr_storage socket, socklen_t socket_len
         exit(1);
     }
     fclose(file);
-    //printf("closed file: %d\n", cls);
-    char hostname[MAX_HOST_NAME];
-    if(gethostname(hostname, MAX_HOST_NAME) != 0) {
+
+    //send response
+    char hostname[NI_MAXHOST];
+    if(gethostname(hostname, NI_MAXHOST) != 0) {
       printf("cant get hostname\n");
       exit(1);
     }
@@ -446,8 +419,6 @@ void handle_put(int stream, struct sockaddr_storage socket, socklen_t socket_len
 }
 
 void handle_quit(int stream) {
-
-  //nicht nötig durch FD_SET? S42 im Handbuch
   close(stream);
   FD_CLR(stream, &all_fds);
   FD_CLR(stream, &copy_fds);
@@ -460,17 +431,13 @@ void handle_quit(int stream) {
   }
 
   --client_count;
-  printf("quit\n");
 }
 
+//move everything 1 to the left
 void rearrangeArray(int index){
     for(int i=index; i<(client_count-1); i++){
         connected_clients[i] = connected_clients[i+1];
     }
-}
-
-void handle_error() {
-  printf("not a valid command\n");
 }
 
 void handle_request(int stream, struct sockaddr_storage socket, socklen_t socket_length) {
@@ -492,7 +459,7 @@ void handle_request(int stream, struct sockaddr_storage socket, socklen_t socket
       handle_quit(stream);
       break;
     default:
-      handle_error();
+      printf("not a valid command\n");
       break;
   }
   printf("done\n");
