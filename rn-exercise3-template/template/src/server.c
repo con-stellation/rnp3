@@ -12,6 +12,7 @@
 #include <malloc.h>
 #include <errno.h>
 #include <stdlib.h>
+#include <time.h>
 
 #define BUFFER_SIZE 256
 #define SRV_PORT 7777
@@ -27,7 +28,7 @@ struct clientinformation{
     char *hostname;
     int socket;
 };
-void handle_request(int);
+void handle_request(int, struct sockaddr_storage, socklen_t);
 void rearrangeArray(int);
 void handle_quit(int);
 int client_count, maxfd;
@@ -164,7 +165,7 @@ int main(void) {
 
                 } else {
                     printf("<else-block> i=%d\n", i);
-                    handle_request(i);
+                    handle_request(i, sa_client, sa_len);
 
                     /*if (recv(i, info, sizeof(info), 0)) {
                         printf("Message received: %s\n", info);
@@ -303,8 +304,7 @@ void handle_get(int stream) {
   printf("closed file: %d\n", cls);
 }
 
-void handle_put(int stream) {
-
+void handle_put(int stream, struct sockaddr_storage socket, socklen_t socket_length) {
   printf("put\n");
   char filename[MAX_FILE_NAME] = {0};
   read_filename(filename, MAX_FILE_NAME, stream);
@@ -312,7 +312,6 @@ void handle_put(int stream) {
   FILE * file = fopen(filename, "w");
   if(file == NULL) {
     printf("File could not be opened");
-    //exit(1);
     return;
   }
   int bytes = 1;
@@ -372,18 +371,25 @@ void handle_put(int stream) {
     }
     fclose(file);
     //printf("closed file: %d\n", cls);
-    char hostname[MAX_HOST_NAME];
-    if(gethostname(hostname, MAX_HOST_NAME) != 0) {
-        printf("cant get hostname\n");
-        exit(1);
+    // char hostname[MAX_HOST_NAME];
+    // if(gethostname(hostname, MAX_HOST_NAME) != 0) {
+    //     printf("cant get hostname\n");
+    //     exit(1);
+    // }
+    char line[NI_MAXHOST + 4];
+    char host[NI_MAXHOST];
+    char ip[NI_MAXHOST];
+    if(getnameinfo((struct sockaddr *)&socket, socket_length, host, NI_MAXHOST, ip, NI_MAXHOST, NI_NUMERICHOST) != 0) {
+      printf("error in getnameinfo\n");
+      exit(1);
     }
-    char line[MAX_FILE_NAME + 4];
-    sprintf(line, "OK %s\n", hostname);
+    sprintf(line, "OK %s\n", host);
     send(stream, line, strlen(line), 0);
-    char* ip = "0.0.0.0\n";
     send(stream, ip, strlen(ip), 0);
+    char new_line = '\n';
+    send(stream, &new_line, 1, 0);
     char time[20] = {0};
-    int get_time(time, 20)
+    get_time(time, 20);
     send(stream, time, strlen(time), 0);
     char n = '\0';
     send(stream, &n, 1, 0);
@@ -414,10 +420,10 @@ void rearrangeArray(int index){
 }
 
 void handle_error() {
-  printf("error\n");
+  printf("not a valid command\n");
 }
 
-void handle_request(int stream) {
+void handle_request(int stream, struct sockaddr_storage socket, socklen_t socket_length) {
   int command = read_command(stream);
   switch(command) {
     case LIST:
@@ -430,7 +436,7 @@ void handle_request(int stream) {
       handle_get(stream);
       break;
     case PUT:
-      handle_put(stream);
+      handle_put(stream, socket, socket_length);
       break;
     case QUIT:
       handle_quit(stream);

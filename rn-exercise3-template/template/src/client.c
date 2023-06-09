@@ -193,7 +193,23 @@ bool read_request(int stream) {
             printf("error in client: %d", __LINE__);
             return false;
         }
-        send(stream, filename, strlen(filename), 0);
+        char *command = "Put ";
+        if(send(stream, command, strlen(command), 0) == -1) {
+            perror("sending command\n");
+            printf("error in client: %d", __LINE__);
+            return false;
+        }
+        if(send(stream, filename, strlen(filename), 0) == -1) {
+            perror("sending filename\n");
+            printf("error in client: %d", __LINE__);
+            return false;
+        }
+        char n = '\0';
+        if(send(stream, &n, 1, 0) == -1) {
+            perror("sending filename nullchar\n");
+            printf("error in client: %d", __LINE__);
+            return false;
+        }
         printf("Filename: %s\n", filename);
         if (fseek(file, 0L, SEEK_END) == 0) {
             /* Get the size of the file. */
@@ -243,7 +259,7 @@ bool read_request(int stream) {
        // send(stream, eof, sizeof eof, 0);
         fclose(file);
         free(source); /* Don't forget to call free() later! */
-
+        printf("\n");
         char byte;
         do {
             recv(stream, &byte, 1, 0);
