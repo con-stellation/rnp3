@@ -119,159 +119,177 @@ int read_command() {
     printf("3) Put\n");
     printf("4) Quit\n");
     char command[2];
-    handle_error(
-        fgets(command, sizeof(command), stdin));
-    char unused[2]; //flush the newline character from the console
-    handle_error(
-        fgets(unused, sizeof(unused), stdin));
+    if(fgets(command, sizeof(command), stdin) == NULL) {
+        printf("cant read command\n");
+        exit(1);
+    }
+    //flush the newline character from the console
+    char unused[2]; 
+    if(fgets(unused, sizeof(unused), stdin) == NULL) {
+        printf("cant read command\n");
+        exit(1);
+    }
     printf("Command: %c\n", command[0]);
     return (int) command[0] - (int) '0';
 }
 
-bool read_request(int stream) {
-    int command = read_command();
+bool handle_get(int stream) {
+    printf("enter filename: \n");
     char filename[MAX_FILE_NAME] = {0};
+    if(fgets(filename, sizeof(filename), stdin) == NULL) {
+        printf("cant read filename\n");
+        exit(1);
+    }
+    char buffer[2] = {0};
+    int bytes = 1;
+    FILE* f = fopen(filename, "w");
+    if(f == NULL){
+        printf ("error in client: %d\n", __LINE__);
+        return false;
+    }
+    if(send(stream, "Get ", 4, 0) == -1) {
+        printf("cant send command\n");
+        exit(1);
+    }
+    if(send(stream, filename, strlen(filename), 0) == -1) {
+        printf("cant send filename\n");
+        exit(1);
+    }
+    char n = '\0';
+    if(send(stream, &n, 1, 0) == -1) {
+        printf("cant send filename nullchar\n");
+        exit(1);
+    }
+    do {
+        bytes = recv(stream, buffer, 1, 0);
+        if(buffer[0] == EOF)
+            break;
+        fprintf(f, "%c", stream);
+        printf("%s", buffer);
+    } while(bytes > 0);
+    fclose(f);
+    return false;
+}
 
-    if(command == GET || command == PUT) {
-        printf("enter filename: \n");
-        // char unused[2]; //flush the newline character from the console
-        // handle_error(
-        //     fgets(unused, sizeof(unused), stdin));
-        handle_error(
-            fgets(filename, sizeof(filename), stdin));
-
-    }
-    if(command == GET) {
-        char buffer[2] = {0};
-        int bytes = 1;
-        FILE* f = fopen(filename, "w");
-        if(f==NULL){
-            printf ("error in client: %d", __LINE__);
-            return false;
-        }
-        //printf("Command: %s Size: %d\n", command, 4);
-        send(stream, "Put ", 4, 0);
-        send(stream, filename, strlen(filename), 0);
-        //printf("bytes received: %d\n", bytes);
-        do {
-            bytes = recv(stream, buffer, 1, 0);
-            //printf("bytes received: %d\n", bytes);
-            if(buffer[0] == EOF){
-                break;
-            }
-            fprintf(f, "%c", stream);
-            printf("%s", buffer);
-        } while(bytes > 0);
-        fclose(f);
-    }
-    if(command == LIST){
-        char buf[2] = {0};
-        int bytes = 1;
-        do{
-            bytes = recv(stream, buf, 1, 0);
-            if(buf[0] == EOF){
-                break;
-            }
-            printf("%c", buf[0]);
-            memset(buf, 0, 2);
-        } while(bytes > 0);
-    }
+bool handle_put(int stream) {
     char* source = NULL;
-    if(command == PUT) {
-        for(unsigned long i = 0; i < strlen(filename); i++)
-            if(filename[i] == '\n') {
-                filename[i] = '\0';
-                break;
-            }
-        for(unsigned long int i = 0; i <  strlen(filename); i++)
-            printf("??? %c\n", filename[i]);
+    char filename[MAX_FILE_NAME] = {0};
+    printf("enter filename: \n");
+    handle_error(fgets(filename, sizeof(filename), stdin));
 
-
-        FILE* file = fopen(filename, "r");
-        if(file == NULL){
-            perror("Fileopen\n");
-            printf("error in client: %d", __LINE__);
-            return false;
+    for(unsigned long i = 0; i < strlen(filename); i++){
+        if(filename[i] == '\n') {
+            filename[i] = '\0';
+            break;
         }
-        char *command = "Put ";
-        if(send(stream, command, strlen(command), 0) == -1) {
-            perror("sending command\n");
-            printf("error in client: %d", __LINE__);
-            return false;
-        }
-        if(send(stream, filename, strlen(filename), 0) == -1) {
-            perror("sending filename\n");
-            printf("error in client: %d", __LINE__);
-            return false;
-        }
-        char n = '\0';
-        if(send(stream, &n, 1, 0) == -1) {
-            perror("sending filename nullchar\n");
-            printf("error in client: %d", __LINE__);
-            return false;
-        }
-        printf("Filename: %s\n", filename);
-        if (fseek(file, 0L, SEEK_END) == 0) {
-            /* Get the size of the file. */
-            printf("Made it to fseek. Filename: %s\n", filename);
-            long bufsize = ftell(file);
-            if (bufsize == -1) {
-                /* Error */
-                perror("ftell");
-            }
+    }
+    for(unsigned long int i = 0; i <  strlen(filename); i++)
+        printf("??? %c\n", filename[i]);
 
-            /* Allocate our buffer to that size. */
-            source = malloc(sizeof(char) * (bufsize + 1));
-
-            /* Go back to the start of the file. */
-            if (fseek(file, 0L, SEEK_SET) != 0) { /* Error */ }
-
-            /* Read the entire file into memory. */
-            size_t newLen = fread(source, sizeof(char), bufsize, file);
-            if ( ferror( file ) != 0 ) {
-                fputs("Error reading file", stderr);
-            } else {
-                source[newLen++] = EOF; /* Just to be safe. */
-            }
-        }
-        if(source != NULL){
-            printf("Source: %s\n\n", source);
-
+    FILE* file = fopen(filename, "r");
+    if(file == NULL){
+        perror("Fileopen\n");
+        printf("error in client: %d", __LINE__);
+        return false;
+    }
+    char *command = "Put ";
+    if(send(stream, command, strlen(command), 0) == -1) {
+        perror("sending command\n");
+        printf("error in client: %d", __LINE__);
+        return false;
+    }
+    if(send(stream, filename, strlen(filename), 0) == -1) {
+        perror("sending filename\n");
+        printf("error in client: %d", __LINE__);
+        return false;
+    }
+    char n = '\0';
+    if(send(stream, &n, 1, 0) == -1) {
+        perror("sending filename nullchar\n");
+        printf("error in client: %d", __LINE__);
+        return false;
+    }
+    printf("Filename: %s\n", filename);
+    if (fseek(file, 0L, SEEK_END) == 0) {
+        /* Get the size of the file. */
+        printf("Made it to fseek. Filename: %s\n", filename);
+        long bufsize = ftell(file);
+        if (bufsize == -1) {
+            /* Error */
+            perror("ftell");
         }
 
-        char filelines[1] = {0};
-        int index = 0;
-        while(1){
-            if(source[index] == EOF){
-                filelines[0] = source[index];
-                send(stream, filelines, 1, 0);
-                break;
-            }
-            printf("%c", source[index]);
+        /* Allocate our buffer to that size. */
+        source = malloc(sizeof(char) * (bufsize + 1));
+
+        /* Go back to the start of the file. */
+        if (fseek(file, 0L, SEEK_SET) != 0) { /* Error */ }
+
+        /* Read the entire file into memory. */
+        size_t newLen = fread(source, sizeof(char), bufsize, file);
+        if ( ferror( file ) != 0 ) {
+            fputs("Error reading file", stderr);
+        } else {
+            source[newLen++] = EOF; /* Just to be safe. */
+        }
+    }
+    if(source != NULL){
+        printf("Source: %s\n\n", source);
+    }
+
+    char filelines[1] = {0};
+    int index = 0;
+    while(1){
+        if(source[index] == EOF){
             filelines[0] = source[index];
             send(stream, filelines, 1, 0);
-            memset(filelines, 0, 1);
-            index++;
+            break;
+        }
+        printf("%c", source[index]);
+        filelines[0] = source[index];
+        send(stream, filelines, 1, 0);
+        memset(filelines, 0, 1);
+        index++;
 
-        };
+    };
+    fclose(file);
+    free(source); /* Don't forget to call free() later! */
+    printf("\n");
+    char byte;
+    do {
+        recv(stream, &byte, 1, 0);
+        printf("%c", byte);
+    } while(byte != '\0');
+    printf("\n");
+    return false;
+}
 
-       // char eof[1] = {EOF};
-       // send(stream, eof, sizeof eof, 0);
-        fclose(file);
-        free(source); /* Don't forget to call free() later! */
-        printf("\n");
-        char byte;
-        do {
-            recv(stream, &byte, 1, 0);
-            printf("%c", byte);
-        } while(byte != '\0');
-        printf("\n");
+bool handle_list(int stream) {
+    char buf[2] = {0};
+    int bytes = 1;
+    do{
+        bytes = recv(stream, buf, 1, 0);
+        if(buf[0] == EOF){
+            break;
+        }
+        printf("%c", buf[0]);
+        memset(buf, 0, 2);
+    } while(bytes > 0);
+}
+
+bool read_request(int stream) {
+    int command = read_command();
+    switch(command) {
+        case GET:
+            return handle_get(stream);
+        case LIST:
+            return handle_list(stream);
+        case PUT: 
+            return handle_put(stream);
+        case QUIT:
+            return true;
+        default:
+            printf("unknown command");
+            return false;
     }
-
-
-
-    //printf("closed file: %d\n", cls);
-
-
-    return(command == QUIT);
 }
