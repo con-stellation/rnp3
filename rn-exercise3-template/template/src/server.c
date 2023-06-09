@@ -13,6 +13,8 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <time.h>
+#include <dirent.h>
+#include <sys/stat.h>
 
 #define BUFFER_SIZE 256
 #define SRV_PORT 7777
@@ -23,6 +25,7 @@
 #define QUIT 4
 #define MAX_FILE_NAME 255
 #define MAX_HOST_NAME 255
+#define MAX_PATH_LENGTH 4096
 
 struct clientinformation{
     char *hostname;
@@ -235,7 +238,6 @@ void read_filename(char *buffer, int buffer_size, int stream) {
       buffer[size] = '\0';
       done = true;
     }
-    //printf("%d:%s\n", size, buffer);
     size++;
   }
 }
@@ -266,7 +268,40 @@ void handle_list(int stream) {
 
 void handle_files(int stream) {
   printf("files\n");
-  send(stream, NULL, 0, 0);
+  char *path = "./";
+  DIR *dir = opendir(path);
+  if(dir == NULL) {
+    char n = EOF;
+    send(stream, &n, 1, 0);
+    printf("cant open path");
+    return;
+  }
+  int buffer_size = 1024; //should be enough memory
+  char buffer[buffer_size]; 
+  memset(buffer, 0, buffer_size);
+  struct dirent* entry;
+  struct stat attributes;
+  int amount_of_files = 0;
+  while ((entry = readdir(dir)) != NULL) {
+    char entryPath[MAX_PATH_LENGTH];
+    sprintf(entryPath, "%s/%s", path, entry->d_name);
+    stat(entryPath, &attributes);
+
+    if (S_ISREG(attributes.st_mode)) {
+      char *name = entry->d_name;
+      char *time = ctime(&attributes.st_mtime);
+      long long size = (long long) attributes.st_size;
+      sprintf(buffer, "Datei-Attribute: %s Last Modified, %s Size, %lld bytes\n", name, time, size);
+      send(stream, buffer, strlen(buffer), 0);
+      memset(buffer, 0, buffer_size);
+      amount_of_files++;
+    }
+  }
+  sprintf(buffer, "%d Dateien\n", amount_of_files);
+  send(stream, buffer, strlen(buffer), 0);
+  closedir(dir);
+  char n = EOF;
+  send(stream, &n, 1, 0);
 }
 
 void handle_get(int stream) {
