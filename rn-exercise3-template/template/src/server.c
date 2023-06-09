@@ -9,7 +9,6 @@
 #include <stdbool.h>
 #include <sys/sendfile.h>
 #include <fcntl.h>
-#include <malloc.h>
 #include <errno.h>
 #include <stdlib.h>
 #include <time.h>
@@ -28,8 +27,9 @@
 #define MAX_PATH_LENGTH 4096
 
 struct clientinformation{
-    char *hostname;
+    char hostname[NI_MAXHOST];
     int socket;
+    char port[NI_MAXHOST];
 };
 void handle_request(int, struct sockaddr_storage, socklen_t);
 void rearrangeArray(int);
@@ -52,8 +52,8 @@ void *get_in_addr(struct sockaddr *sa){
 int main(void) {
     
     int s_tcp, news, selectRetVal;
-    char host[1024];
-    char service[20];
+    char host[NI_MAXHOST];
+    char service[NI_MAXHOST];
 
 
     //IP-neutralität gewähren
@@ -160,8 +160,15 @@ int main(void) {
                     getnameinfo((struct sockaddr*)&sa_client, sizeof sa_client, host, sizeof host, service, sizeof service, 0);
                     struct clientinformation ci;
                     //TODO muss noch der Fall abgefangen werden, dass mehr als 5 Clients angemeldet sind oder ist dies durch das listen() erledigt?
-                    ci.hostname = host;
+                    for(int i=0; i<NI_MAXHOST; i++){
+                      ci.hostname[i] = host[i];
+                    }
+                    
                     ci.socket = news;
+                    for(int i=0; i<NI_MAXHOST; i++){
+                      ci.port[i] = service[i];
+                    }
+                    
                     connected_clients[client_count] = ci;
                     client_count++;
                     printf("New socket = %d (comp. %d), host = %s\n", ci.socket, news, ci.hostname);
@@ -186,7 +193,7 @@ int main(void) {
     return 0;
 }
 
-int get_time(char *buffer, int size) {
+void get_time(char *buffer, int size) {
   time_t t;
   struct tm *info;
   time(&t);
@@ -243,26 +250,27 @@ void read_filename(char *buffer, int buffer_size, int stream) {
 }
 
 void handle_list(int stream) {
-    printf("list\n");
-    char temp[17] = {0};
-    char end_of_file = EOF;
-    sprintf(temp, "Clientcount: %d\n%c", client_count, end_of_file);
-    printf("Clientcount: %d\n", client_count);
-    char str[6 * sizeof(struct clientinformation)] = {0};
-    char s[sizeof(struct clientinformation)] = {0};
+  printf("%d\n", stream);
+    // printf("list\n");
+    // char temp[100] = {0};
+    // char end_of_file = EOF;
+    // sprintf(temp, "Clientcount: %d\n%c", client_count, end_of_file);
+    // printf("Clientcount: %d\n", client_count);
+    // char str[7 * (sizeof(struct clientinformation))] = {0};
 
-    for (int i = 0; i < client_count; i++) {
-        //int b = sprintf(s, "%s : %d\n", connected_clients[i].hostname, connected_clients[i].socket);
-        strcat(str, s);
-        printf("%s\n", str);
-        memset(s, 0, sizeof s);
-    }
+    // for (int i = 0; i < client_count; i++) {
+    //     char s[5+(sizeof(connected_clients[i].hostname)+sizeof(connected_clients[i].port))];
+    //     sprintf(s, "%s : %s\n", connected_clients[i].hostname, connected_clients[i].port);
+    //     strcat(str, s);
+    //     printf("%s\n", str);
+        
+    // }
 
-    printf("Clientinformationen versendet\n");
-    strcat(str, temp);
-    send(stream, str, strlen(str), 0);
-    memset(str, 0, sizeof str);
-    memset(temp, 0, sizeof temp);
+    // printf("Clientinformationen versendet\n");
+    // strcat(str, temp);
+    // send(stream, str, strlen(str), 0);
+    // memset(str, 0, sizeof str);
+    // memset(temp, 0, sizeof temp);
 }
 
 
@@ -327,16 +335,22 @@ void handle_get(int stream) {
     }
     printf("error\n");
     //exit(1);
+    return;
   }
   int bytes;
   do {
     bytes = sendfile(stream, file, NULL, 1);
     //printf("%d bytes send\n", bytes);
   } while(bytes > 0);
-  char end_of_file = EOF;
-  send(stream, &end_of_file, 1, 0);
+  if(bytes<0){
+      printf("Server: Error sending file. Line: %d", __LINE__);
+      return;
+  }
+
   int cls = close(file);
   printf("closed file: %d\n", cls);
+  char n = '\0';
+  send(stream, &n, 1, 0);
 }
 
 void handle_put(int stream, struct sockaddr_storage socket, socklen_t socket_length) {
@@ -406,21 +420,22 @@ void handle_put(int stream, struct sockaddr_storage socket, socklen_t socket_len
     }
     fclose(file);
     //printf("closed file: %d\n", cls);
-    // char hostname[MAX_HOST_NAME];
-    // if(gethostname(hostname, MAX_HOST_NAME) != 0) {
-    //     printf("cant get hostname\n");
-    //     exit(1);
-    // }
+    char hostname[MAX_HOST_NAME];
+    if(gethostname(hostname, MAX_HOST_NAME) != 0) {
+      printf("cant get hostname\n");
+      exit(1);
+    }
     char line[NI_MAXHOST + 4];
     char host[NI_MAXHOST];
-    char ip[NI_MAXHOST];
-    if(getnameinfo((struct sockaddr *)&socket, socket_length, host, NI_MAXHOST, ip, NI_MAXHOST, NI_NUMERICHOST) != 0) {
+    char port[NI_MAXHOST];
+    if(getnameinfo((struct sockaddr *)&socket, socket_length, host, NI_MAXHOST, port, NI_MAXHOST, 0) != 0) {
       printf("error in getnameinfo\n");
       exit(1);
     }
-    sprintf(line, "OK %s\n", host);
+    sprintf(line, "OK %s\n", hostname);
     send(stream, line, strlen(line), 0);
-    send(stream, ip, strlen(ip), 0);
+    send(stream, port, strlen(port), 0);
+    printf("Host: %s, Port: %s", host, port);
     char new_line = '\n';
     send(stream, &new_line, 1, 0);
     char time[20] = {0};

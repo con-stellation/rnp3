@@ -10,6 +10,7 @@
 #include <sys/sendfile.h>
 #include <fcntl.h>
 #include <netdb.h>
+#include <errno.h>
 
 // TODO: Remove this block.
 #define LIST 0
@@ -23,11 +24,11 @@ bool read_request(int);
 
 void *get_in_addr(struct sockaddr *sa){
     if (sa->sa_family == AF_INET) {
-        printf("IPv4\n"); 
+        //printf("IPv4\n"); 
         return &(((struct sockaddr_in*)sa)->sin_addr);
         
     } else if(sa->sa_family == AF_INET6){
-        printf("IPv6\n");
+        //printf("IPv6\n");
         return &(((struct sockaddr_in6*)sa)->sin6_addr);
     }
     return NULL;
@@ -83,7 +84,7 @@ int main(int argc, char** argv) {
 
     freeaddrinfo(servinfo);
 
-    printf("into superloop\n");
+    //printf("into superloop\n");
     while(1) {
         if(read_request(s_tcp))
             break;
@@ -117,7 +118,7 @@ int read_command() {
     printf("1) Files\n");
     printf("2) Get\n");
     printf("3) Put\n");
-    printf("4) Quit\n");
+    printf("4) Quit\n\n");
     char command[2];
     if(fgets(command, sizeof(command), stdin) == NULL) {
         printf("cant read command\n");
@@ -129,7 +130,7 @@ int read_command() {
         printf("cant read command\n");
         exit(1);
     }
-    printf("Command: %c\n", command[0]);
+    //printf("Command: %c\n", command[0]);
     return (int) command[0] - (int) '0';
 }
 
@@ -142,11 +143,13 @@ bool handle_get(int stream) {
     }
     char buffer[2] = {0};
     int bytes = 1;
-    FILE* f = fopen(filename, "w");
-    if(f == NULL){
-        printf ("error in client: %d\n", __LINE__);
+    FILE *f = fopen(filename, "w");
+    if(f==NULL){
+        printf("Get in Client: error fopen\n");
         return false;
+        //exit(1);
     }
+
     if(send(stream, "Get ", 4, 0) == -1) {
         printf("cant send command\n");
         exit(1);
@@ -164,10 +167,16 @@ bool handle_get(int stream) {
         bytes = recv(stream, buffer, 1, 0);
         if(buffer[0] == EOF)
             break;
-        fprintf(f, "%c", stream);
+        fprintf(f, buffer, 1);
+        fflush(f);
         printf("%s", buffer);
     } while(bytes > 0);
+    if(bytes < 0){
+        printf("Error receiving file.\n");
+        return false;
+    }
     fclose(f);
+    printf("closed file: %s\n", filename);
     return false;
 }
 
@@ -183,8 +192,8 @@ bool handle_put(int stream) {
             break;
         }
     }
-    for(unsigned long int i = 0; i <  strlen(filename); i++)
-        printf("??? %c\n", filename[i]);
+    //for(unsigned long int i = 0; i <  strlen(filename); i++)
+        //printf("??? %c\n", filename[i]);
 
     FILE* file = fopen(filename, "r");
     if(file == NULL){
@@ -212,7 +221,7 @@ bool handle_put(int stream) {
     printf("Filename: %s\n", filename);
     if (fseek(file, 0L, SEEK_END) == 0) {
         /* Get the size of the file. */
-        printf("Made it to fseek. Filename: %s\n", filename);
+        printf("Filename: %s\n", filename);
         long bufsize = ftell(file);
         if (bufsize == -1) {
             /* Error */
